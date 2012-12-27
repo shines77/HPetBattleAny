@@ -35,14 +35,21 @@
 
 			["PetBreedInfo"]				= "显示Breed",
 
-			["ShowBreedId"]					= "显示BreedID",
-			["ShowBreedIdTooltip"]			= "在宠物日志的宠物类别旁边显示BreedID",
+			["ShowBreedID"]					= "显示BreedID",
+			["ShowBreedIDTooltip"]			= "在宠物日志的宠物类别旁边显示BreedID",
 
 			["FastForfeit"]					= "快速放弃",
 			["FastForfeitTooltip"]			= "|cff00ffff勾选后，放弃键将直接放弃战斗，无需确认|r",
 
 			["OtherTooltip"]				= "额外鼠标提示",
 			["OtherTooltipTooltip"]			= "鼠标提示中加入宠物信息(收集/来源)",
+
+			["AutoSaveAbility"]				= "保存技能",
+			["AutoSaveAbilityTooltip"]		= "自动保存每个宠物的技能(无法跨账号保存,[/hpq cc]清除保存)|n通过点击宠物卡片上的技能，也能达到切换的效果",
+			["AutoSaveAbilityConfig"]		= "已清除所有宠物技能保存记录",
+
+			["AutoShowHide"]				= "其他Ui显示/隐藏",
+			["AutoShowHideTooltip"]			= "自动显示和隐藏其他UI，例如小地图，recount.|n详情可以参阅http://nga.178.com/read.php?tid=5691008|n该功能会照成一个BUG：战斗中无法上其他载具|n输入[|cffff0000/reload|r]后才生效改动",
 
 			["bottom title"]				= "作者：上官晓雾|n发布：NGA(宠物区)|nID:上官晓雾#5190/zhCN",
 
@@ -67,41 +74,41 @@
 elseif GetLocale() == "zhTW" then
 		HPetLocals = {
 			----------Options
-			["HPet Options"] = "HPet 設置",
+			["HPet Options"] 				= "HPet 設置",
 			["Pet All Info"]				= "寵物信息",
 
 			["Loading"]						= "已開啟，輸入%s進入設置介面",
 
-			["Message"] = "文字提示", --ShowMsg
-			["MessageTooltip"] = "進入對戰後，聊天窗口列出敵對寵物信息以及收集情況",
+			["Message"] 					= "文字提示", --ShowMsg
+			["MessageTooltip"] 				= "進入對戰後，聊天窗口列出敵對寵物信息以及收集情況",
 
-			["Sound"] = "聲音提示", --Sound
-			["SoundTooltip"] = "藍色/藍色以上可捕捉寵物發出聲音提示。",
+			["Sound"] 						= "聲音提示", --Sound
+			["SoundTooltip"] 				= "藍色/藍色以上可捕捉寵物發出聲音提示。",
 
 			["OnlyInPetInfo"]				= "文字提示信息",
 			["OnlyInPetInfoTooltip"]		= "勾選后，文字提示信息將只跟隨寵物對戰信息",
 
 			["HighGlow"]					= "寵物頭像上色",
 
-			["EnemyAbility"] = "敵對技能圖標",
-			["EnemyAbilityTooltip"] = "寵物對戰中顯示敵對技能(技能CD),该圖標可以移動。",
+			["EnemyAbility"] 				= "敵對技能圖標",
+			["EnemyAbilityTooltip"] 		= "寵物對戰中顯示敵對技能(技能CD),该圖標可以移動。",
 
-			["LockEnemyAbility"] = "鎖定敵對技能圖標",
-			["LockEnemyAbilityTooltip"] = "解鎖或者移動敵對技能圖標",
+			["LockEnemyAbility"]			= "鎖定敵對技能圖標",
+			["LockEnemyAbilityTooltip"] 	= "解鎖或者移動敵對技能圖標",
 
-			["EnemyAbilityScale"] = "敵對技能圖標縮放", --EnemyAbScale
-			["EnemyAbilityScaleTooltip"] = "縮放敵對技能圖標",
+			["EnemyAbilityScale"] 			= "敵對技能圖標縮放", --EnemyAbScale
+			["EnemyAbilityScaleTooltip"] 	= "縮放敵對技能圖標",
 
-			["PetGrowInfo"] = "顯示成長值", --ShowGrowInfo
-			["PetGrowInfoTooltip"] = "顯示成長值",
+			["PetGrowInfo"] 				= "顯示成長值", --ShowGrowInfo
+			["PetGrowInfoTooltip"] 			= "顯示成長值",
 
-			["PetGreedInfo"] = "顯示品值",
-			["PetGreedInfoTooltip"] = "新成長值需要x基數得到準確成長值|n品質基數:劣質x1.0 普通1.1 優秀1.2 精良1.3 |n跨越品質比較(用於5.1的戰鬥石)",
+			["PetGreedInfo"] 				= "顯示品值",
+			["PetGreedInfoTooltip"] 		= "新成長值需要x基數得到準確成長值|n品質基數:劣質x1.0 普通1.1 優秀1.2 精良1.3 |n跨越品質比較(用於5.1的戰鬥石)",
 
 			["PetBreedInfo"]				= "顯示Breed",
 
-			["ShowBreedId"]					= "显示BreedID",
-			["ShowBreedIdTooltip"]				= "在宠物日志的宠物类别旁边显示BreedID",
+			["ShowBreedID"]					= "显示BreedID",
+			["ShowBreedIDTooltip"]				= "在宠物日志的宠物类别旁边显示BreedID",
 
 			["FastForfeit"]					= "快速放棄",
 			["FastForfeitTooltip"]				= "|cff00ffff按下放棄快捷鍵直接放棄戰鬥，無需確認|r",
@@ -109,7 +116,14 @@ elseif GetLocale() == "zhTW" then
 			["OtherTooltip"]				= "額外鼠標提示",
 			["OtherTooltipTooltip"]			= "鼠標提示中加入寵物信息(收集/來源)",
 
-			["bottom title"] = "作者：上官曉霧|n發布：NGA(寵物區)|nID:上官晓雾#5190/zhCN",
+			["AutoSaveAbility"]				= "保存技能",
+			["AutoSaveAbilityTooltip"]		= "自動保存每個寵物的技能(無法跨帳號保存,[/hpq cc]清除保存)|n通過點擊寵物卡片上的技能，也能達到切換的效果",
+			["AutoSaveAbilityConfig"]		= "已清除所有寵物技能保存記錄",
+
+			["AutoShowHide"]				= "其他UI顯示/隱藏",
+			["AutoShowHideTooltip"] 		= "自動顯示和隱藏其他UI，例如小地圖，recount.|n詳情可以參閱http://nga.178.com/read.php?tid=5691008|n該功能會照成一個BUG ：戰鬥中無法上其他載具|n輸入[|cffff0000/reload|r]后才生效改動",
+
+			["bottom title"] 				= "作者：上官曉霧|n發布：NGA(寵物區)|nID:上官晓雾#5190/zhCN",
 
 			["lock rarity"]					= "鎖定品質",
 			["Grow Point"]					= "成長值:",
@@ -120,74 +134,82 @@ elseif GetLocale() == "zhTW" then
 			["Base Points"]					= "基礎值",
 
 			----------other
-			["Only collected"] = "只收集了",
-			["this is"]			= "第%s隻",
-			["Search Help"] = "搜索幫助",
-			["searchhelp1"] = "[/hpq s xxx]xxx為寵物任意來源信息",
-			["searchhelp2"] = "[/hpq ss XXX]xxx寵物任意技能信息(可以是技能內的文本)",
-			["search key"] = "搜索關鍵字為:",
-			["search remove key"] = "排除關鍵字為:",
+			["Only collected"] 				= "只收集了",
+			["this is"]						= "第%s隻",
+			["Search Help"] 				= "搜索幫助",
+			["searchhelp1"] 				= "[/hpq s xxx]xxx為寵物任意來源信息",
+			["searchhelp2"] 				= "[/hpq ss XXX]xxx寵物任意技能信息(可以是技能內的文本)",
+			["search key"] 					= "搜索關鍵字為:",
+			["search remove key"] 			= "排除關鍵字為:",
 		}
 else
 	HPetLocals = {
 		---------- Options
-		["HPet Options"] = "HPet Options",
-		["Pet All Info"]				= "Pet All Info",
+		["HPet Options"] 					= "HPet Options",
+		["Pet All Info"]					= "Pet All Info",
 
-		["Loading"]						= "is Loaded，type %s to configure",
+		["Loading"]							= "is Loaded，type %s to configure",
 
-		["Message"] = "text prompt",
-		["MessageTooltip"] = "enter the PetBattle, the chat window lists hostile pet information and the collection of",
+		["Message"] 						= "text prompt",
+		["MessageTooltip"] 					= "enter the PetBattle, the chat window lists hostile pet information and the collection of",
 
-		["Sound"] = "sound",
-		["SoundTooltip"] = "Rare pet may capture of Sound Alarm.",
+		["Sound"] 							= "sound",
+		["SoundTooltip"] 					= "Rare pet may capture of Sound Alarm.",
 
-		["OnlyInPetInfo"]				= "text position",
+		["OnlyInPetInfo"]					= "text position",
 
-		["HighGlow"]					= "color pet unit",
+		["HighGlow"]						= "color pet unit",
 
-		["EnemyAbility"] = "enemy skill",
-		["EnemyAbilityTooltip"] = "In PetBattle,Show skills(skills CD) of emeny,Drag the icons can be moved.",
+		["EnemyAbility"] 					= "enemy skill",
+		["EnemyAbilityTooltip"] 			= "In PetBattle,Show skills(skills CD) of emeny,Drag the icons can be moved.",
 
-		["LockEnemyAbility"] = "lock enemy skill",
-		["LockEnemyAbilityTooltip"] = "unlock or move enemy skill icons",
+		["LockEnemyAbility"] 				= "lock enemy skill",
+		["LockEnemyAbilityTooltip"] 		= "unlock or move enemy skill icons",
 
-		["EnemyAbilityScale"] = "enemy skill scaling",
-		["EnemyAbilityScaleTooltip"] = "Zoom enemy skill icons",
+		["EnemyAbilityScale"] 				= "enemy skill scaling",
+		["EnemyAbilityScaleTooltip"] 		= "Zoom enemy skill icons",
 
-		["PetGrowInfo"] = "growth value",
-		["PetGrowInfoTooltip"] = "display growth value",
+		["PetGrowInfo"] 					= "growth value",
+		["PetGrowInfoTooltip"] 				= "display growth value",
 
-		["PetGreedInfo"] = "greed value",
+		["PetGreedInfo"] 					= "greed value",
 
-		["PetBreedInfo"]				= "Breed value",
+		["PetBreedInfo"]					= "Breed value",
 
-		["ShowBreedId"]					= "BreedID",
+		["ShowBreedID"]						= "BreedID",
 
-		["FastForfeit"]					= "Fast Forfeit",
+		["FastForfeit"]						= "Fast Forfeit",
 		["FastForfeitTooltip"]				= "|cff00ffffDown Forfeit's button without confirm|r",
 
-		["OtherTooltip"]				= "OtherTooltip",
-		["OtherTooltipTooltip"]			= "Add something to GameTooltip(Collected/sourceText)",
+		["OtherTooltip"]					= "OtherTooltip",
+		["OtherTooltipTooltip"]				= "Add something to GameTooltip(Collected/sourceText[/hpq cc]clear date)|nClick the PetCard's ability can achieve the effect of switching",
+		["AutoSaveAbilityConfig"]			= "ability save clear over",
 
-		["bottom title"] = "作者：上官曉霧|n發布：NGA(寵物區)|nID:上官晓雾#5190/zhCN",
+		["AutoSaveAbility"]					= "Auto Save Ability",
+		["AutoSaveAbilityTooltip"]			= "Auto Save/Laod All Pet Ability",
+		["AutoSaveAbilityConfig"]			= "Has been cleared of all pet skills",
 
-		["lock rarity"]					= "lock rarity",
-		["Grow Point"]					= "Grow::",
-		["Greed Point"]					= "Greed:",
-		["Breed Point"]					= "Breed:",
-		["Breed"]						= "Breed",
-		["Switch"]						= "Switch",
-		["Base Points"]					= "Base Points",
+		["AutoShowHide"]					= "Other UI Show/Hide",
+		["AutoShowHideTooltip"] 			= "Auto Show and hide the UI, such as a Minimap, recount.|nDetails can see http://nga.178.com/read.php?tid=5691008|nThe function will cause a BUG:In combat can't be to other Vehicles|nInput [|cffff0000/reload|r] changes take effect only",
+
+		["bottom title"] 					= "作者：上官曉霧|n發布：NGA(寵物區)|nID:上官晓雾#5190/zhCN",
+
+		["lock rarity"]						= "lock rarity",
+		["Grow Point"]						= "Grow::",
+		["Greed Point"]						= "Greed:",
+		["Breed Point"]						= "Breed:",
+		["Breed"]							= "Breed",
+		["Switch"]							= "Switch",
+		["Base Points"]						= "Base Points",
 
 		---------- other
-		["Only collected"] = "collect only",
-		["this is"]			= "the %s is ",
-		["Loading info"] = "the pet identify open input% s to set the message alert",
-		["Search Help"] = "Search Help",
-		["searchhelp1"] = "[/ hpq s xxx] xxx as a the pet any source of information",
-		["searchhelp2"] = "[/ hpq ss XXX] xxx pet any skills (can be skills within the text),",
-		["search key"] = "Search for the key word:",
-		["search remove key"] = "Negative keyword:",
+		["Only collected"] 					= "collect only",
+		["this is"]							= "the %s is ",
+		["Loading info"] 					= "the pet identify open input% s to set the message alert",
+		["Search Help"] 					= "Search Help",
+		["searchhelp1"] 					= "[/ hpq s xxx] xxx as a the pet any source of information",
+		["searchhelp2"] 					= "[/ hpq ss XXX] xxx pet any skills (can be skills within the text),",
+		["search key"]						= "Search for the key word:",
+		["search remove key"] 				= "Negative keyword:",
 	}
 end

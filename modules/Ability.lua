@@ -1,7 +1,4 @@
-﻿-----####Ability1.51####
-----------1.45：稍微模块化了一下
-----------1.46：隐藏按钮的快捷键图标
-----------1.5：模块化(设置函数没有未独立出来)
+﻿-----####Ability.lua 1.51####
 ----------1.51:没有实际上的改动(敌对技能位置储存方式改变了。可能会重置位置)
 
 local _
@@ -100,7 +97,12 @@ local function PetBattleActionButton_UpdateStatehook(self)
 	local actionIndex = self.actionIndex;
 
 	local _, usable, cooldown, hasSelected, isSelected, isLocked, isHidden;
+	local selectedActionType, selectedActionIndex = C_PetBattles.GetSelectedAction();
 
+
+	if ( selectedActionType ) then
+		hasSelected = true
+	end
 
 	--获取usable/cooldown/locked的状态
 	if ( actionType == LE_BATTLE_PET_ACTION_ABILITY ) then

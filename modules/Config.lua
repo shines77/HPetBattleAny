@@ -1,5 +1,6 @@
------####Config1.4####
------1.4Ôö¼ÓÊó±êÌáÊ¾ĞÅÏ¢µÄ¿ª¹Ø
+ï»¿-----####Config.lua 1.5####
+-----1.41å¢åŠ éšè—å…¶ä»–UIçš„å¼€å…³---åŠŸèƒ½ç”Ÿæ•ˆéœ€è¦/reload
+-----1.5 å»æ‰äº†éšè—/æ˜¾ç¤ºå…¶ä»–UIçš„å¼€å…³
 
 local _
 --~ Globals
@@ -21,7 +22,7 @@ tinsert(UISpecialFrames, "HPetOption")
 
 function HPetOption:Init()
 	-- init frame
-	self:SetWidth(320); self:SetHeight(340);
+	self:SetWidth(320); self:SetHeight(400);
 	self:SetPoint("CENTER")
 	self:SetFrameStrata("HIGH")
 	self:SetToplevel(true)
@@ -110,7 +111,7 @@ function HPetOption:InitButtons()
 		{name="PetBreedInfo",type="CheckButton",var="PetBreedInfo",
 			point="TOP",relative="PetGrowInfo",rpoint="BOTTOM",
 		},
-		{name="ShowBreedId",type="CheckButton",var="ShowBreedId",
+		{name="ShowBreedID",type="CheckButton",var="ShowBreedID",
 			point="LEFT",relative="PetBreedInfo",rpoint="RIGHT",
 			x=130,
 		},
@@ -126,11 +127,18 @@ function HPetOption:InitButtons()
 		{name="EnemyAbility",type="CheckButton",var="EnemyAbility",
 			point="TOP",relative="FastForfeit",rpoint="BOTTOM",
 		},
-
 		{name="LockEnemyAbility",type="CheckButton",var="LockEnemyAbility",
 			point="LEFT",relative="EnemyAbility",rpoint="RIGHT",
 			x=130,
 		},
+
+		{name="AutoSaveAbility",type="CheckButton",var="AutoSaveAbility",
+			point="TOP",relative="EnemyAbility",rpoint="BOTTOM",
+		},
+--~ 		{name="AutoShowHide",type="CheckButton",var="AutoShowHide",
+--~ 			point="LEFT",relative="AutoSaveAbility",rpoint="RIGHT",
+--~ 			x=130,
+--~ 		},
 
 		-- Sliders
 		{name="EnemyAbilityScale",type="Slider",min=0.00,max=2.00,step=0.01,width=220,
@@ -141,6 +149,8 @@ function HPetOption:InitButtons()
 
 
 	}
+
+self:SetHeight(50*#self.Buttons/2)
 
 	local button, text, name, value
 	for key,value in pairs(self.Buttons) do
@@ -258,6 +268,11 @@ function HPetOption:OnCheckButtonClicked()
 			PetBattleFrame.ActiveEnemy.glow:Hide()
 			PetBattleFrame.ActiveAlly.glow:Hide()
 		end
+	elseif value.var == "AutoSaveAbility" then
+		for i = 1, 6 do
+			_G["PetJournalPetCardSpell"..i].icon:SetVertexColor(1,1,1,1)
+		end
+		PetJournal_UpdatePetCard(PetJournalPetCard)
 	else
 		if PetJournal then
 			if PetJournal and PetJournalParent:IsShown() and PetJournal:IsShown() then
@@ -331,7 +346,7 @@ end
 
 
 
---------------------		SLASH,ÒÔºóÖ±½ÓÅª¸öÉèÖÃÃæ°å
+--------------------		SLASH
 SLASH_PETQUALITY1 = "/hpetquality";
 SLASH_PETQUALITY2 = "/hpq";
 SlashCmdList["PETQUALITY"] = function(msg, editbox)
@@ -347,8 +362,27 @@ SlashCmdList["PETQUALITY"] = function(msg, editbox)
 			end
 		end
 	end
---~ 	ÕâÊÇËÑË÷¹¦ÄÜ
-	if command =="s" or command =="ËÑË÷" or command == "ss" then
+--~ 	è¿™æ˜¯æœç´¢åŠŸèƒ½
+	if command =="s" or command =="æœç´¢" or command == "ss" then
 		HPetBattleAny:Search(command,rest)
+	end
+
+	if command =="cc" then
+		HPetSaves.PetAblitys={}
+		DEFAULT_CHAT_FRAME:AddMessage(L["AutoSaveAbilityConfig"])
+	end
+	if command =="cz" then
+		local t={}
+		for k,v in pairs(HPetSaves.PetAblitys) do
+			if not v or v=="000" or v=="123" or v==123 or v==0 then
+			else
+				t[k]=v
+
+				print(1)
+			end
+		end
+
+		HPetSaves.PetAblitys=t
+		DEFAULT_CHAT_FRAME:AddMessage(L["AutoSaveAbilityConfig"])
 	end
 end

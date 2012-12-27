@@ -1,6 +1,5 @@
-﻿-----####HPetBattleAny2.1####
-----2.0:petid 不能为0必须为"0x0000000000000000",外加很多对应5.1的修改
-----2.1:读取宠物数据加入了1.5秒的冷却(?),避免因为特殊情况无限读取照成登陆卡住
+﻿-----####HPetBattleAny2.2####
+----2.2:HPetBattleAny:VARIABLES_LOADED解决每次新增设置模块都有错误的问题
 
 local _
 --- Globals
@@ -23,9 +22,12 @@ function HPetBattleAny:LoadSomeAny()
 		PET_BATTLE_COMBAT_LOG_AURA_APPLIED ="%1$s对%3$s %4$s 造成了%2$s效果."
 		PET_BATTLE_COMBAT_LOG_PAD_AURA_APPLIED = "%1$s对%3$s 造成了%2$s效果."
 	end
-	FRAMELOCK_STATES["PETBATTLES"]["Recount_MainWindow"]="hidden"
-	FRAMELOCK_STATES["PETBATTLES"]["MinimapCluster"]=""
 end
+--------用于自动隐藏和显示的界面名字
+HPetBattleAny.AUtoHideShowfrmae={
+	["MinimapCluster"]="",
+	["Recount_MainWindow"]="",
+}
 
 function HPetBattleAny:PlaySoundFile()
 ------- 这里可以修改声音文件
@@ -35,29 +37,25 @@ function HPetBattleAny:Loadinginfo()
 	self:PetPrintEX(format("HPetBattleAny"..VERSION..L["Loading"],"|cffff0000/hpq|r"))
 end
 --------------------		SAVE
-HPetSaves = {}
-function HPetBattleAny:GetDefault()
-	return {
-		ShowMsg = true,				--在聊天窗口显示信息
-		Sound=true,
-		ShowGrowInfo=true,			--显示成长值
-		PetGreedInfo=false,			--显示品值
-		PetBreedInfo=false,			--breeid
-		ShowBreedId=false,			--显示breedID
-		EnemyAbility=true,			--显示敌对技能
-		EnemyAbPoint={},			--位置(nil)
-		EnemyAbScale=0.8,			--敌对技能大小
-		OnlyInPetInfo=false,
-		HighGlow=true,				--战斗中用品质颜色对宠物头像着色
-		Tooltip=true,				--额外鼠标提示
-	}
-end
-
-HPetSaves = HPetBattleAny:GetDefault()
+HPetSaves={}
+HPetBattleAny.Default={
+	ShowMsg = true,				--在聊天窗口显示信息
+	Sound=true,
+	ShowGrowInfo=true,			--显示成长值
+	PetGreedInfo=false,			--显示品值
+	PetBreedInfo=false,			--breeID
+	ShowBreedID=false,			--显示breedID
+	EnemyAbility=true,			--显示敌对技能
+	EnemyAbPoint={},			--位置(nil)
+	EnemyAbScale=0.8,			--敌对技能大小
+	OnlyInPetInfo=false,
+	HighGlow=true,				--战斗中用品质颜色对宠物头像着色
+	Tooltip=true,				--额外鼠标提示
+	AutoSaveAbility=true,		--自动保存技能
+}
 
 --------------------		载入宠物手册的数据
 HPetBattleAny.HasPet={}
-
 --[[		function	]]--
 -----	测试函数
 function printt(str)
@@ -103,17 +101,17 @@ function HPetBattleAny:PetPrintEX(str,...)
 
 end
 -----	创建宠物链接
-function HPetBattleAny.CreateLinkByInfo(petid,petstate,usecustom)
-	if petid == 0 or petid == "0x0000000000000000" or not petid then return nil end
+function HPetBattleAny.CreateLinkByInfo(petID,petstate,usecustom)
+	if petID == 0 or petID == "0x0000000000000000" or not petID then return nil end
 	local name,speciesID,customName
 	if not petstate then
 		petstate={}
-		speciesID, customName, petstate.level = C_PetJournal.GetPetInfoByPetID(petid)
-		_, petstate.health, petstate.power, petstate.speed, petstate.rarity = C_PetJournal.GetPetStats(petid)
+		speciesID, customName, petstate.level = C_PetJournal.GetPetInfoByPetID(petID)
+		_, petstate.health, petstate.power, petstate.speed, petstate.rarity = C_PetJournal.GetPetStats(petID)
 		if not speciesID then return end
 		if not usecustom then customName = nil end
-	else	--没有唯一ID说明petid就是唯一ID
-		speciesID,petid = petid,"0x0000000000000000"
+	else	--没有唯一ID说明petID就是唯一ID
+		speciesID,petID = petID,"0x0000000000000000"
 	end
 
 	name = petstate.name or customName or C_PetJournal.GetPetInfoBySpeciesID(speciesID)
@@ -123,14 +121,14 @@ function HPetBattleAny.CreateLinkByInfo(petid,petstate,usecustom)
 			HPetSaves.lie = tonumber(HPetSaves.lie) or 1
 			rarity=rarity+HPetSaves.lie
 		end
-		local bhealth,bpower,bspeed,breedId = HPetDate.GetBreedValue(petstate,speciesID,true)
+		local bhealth,bpower,bspeed,breedID = HPetDate.GetBreedValue(petstate,speciesID,true)
 		health=format("%0.f",bhealth*tonumber("1."..(rarity-1))*level*5+100)
 		power=format("%0.f",bpower*tonumber("1."..(rarity-1))*level)
 		speed=format("%0.f",bspeed*tonumber("1."..(rarity-1))*level)
 		local link=""
 		rarity = rarity - 1
 		link=ITEM_QUALITY_COLORS[rarity].hex.."\124Hbattlepet:"
-		link=link..speciesID..":"..level..":"..rarity..":"..health..":"..power..":"..speed..":"..petid
+		link=link..speciesID..":"..level..":"..rarity..":"..health..":"..power..":"..speed..":"..petID
 		link=link.."\124h["..(customName or name).."]\124h\124r"
 		return link
 	end
@@ -146,7 +144,7 @@ function HPetBattleAny.ShowMaxValue(petstate,speciesID,point)
 	-- bhealth,bpower,bspeed	------breed加值
 
 
-	local bhealth,bpower,bspeed,breedId,thealth,tpower,tspeed = HPetDate.GetBreedValue(petstate,speciesID)
+	local bhealth,bpower,bspeed,breedID,thealth,tpower,tspeed = HPetDate.GetBreedValue(petstate,speciesID)
 
 	local ghealth=format("%.1f",(bhealth+thealth)*5*breed)
 	local gpower=format("%.1f",(bpower+tpower)*breed)
@@ -199,7 +197,7 @@ function HPetBattleAny.ShowMaxValue(petstate,speciesID,point)
 		end
 
 	end
-	return rhealth,rpower,rspeed,breedId
+	return rhealth,rpower,rspeed,breedID
 end
 
 -----	调出宠物收集信息(已有宠物信息)
@@ -264,6 +262,7 @@ end
 --[[ 	OnEvent:					PET_BATTLE_OPENING_START	]]--
 function HPetBattleAny:PET_BATTLE_OPENING_START()
 printt("test:战斗开始")
+self:PetPrintEX("---战斗开始---",1,1,0)
 self.EnemyPetInfo={}
 ----- 输出敌对宠物的数据
 		local petOwner=2
@@ -283,13 +282,15 @@ self.EnemyPetInfo={}
 				isflying = true
 			end
 
-			self.EnemyPetInfo[petIndex]={["name"]=name,["level"]=level,["health"]=health,["power"]=power,["speed"]=speed,["rarity"]=rarity,["isflying"]=isflying}
+			self.EnemyPetInfo[petIndex]={["name"]=name,["level"]=level,["health"]=health,["power"]=power,["speed"]=speed,["breedID"]=nil,["rarity"]=rarity,["isflying"]=isflying}
 
-			local breedId=select(4,HPetDate.GetBreedValue(self.EnemyPetInfo[petIndex],speciesID))	--获取breedId
+			local breedID=select(4,HPetDate.GetBreedValue(self.EnemyPetInfo[petIndex],speciesID))	--获取breedID
+
+			self.EnemyPetInfo[petIndex].breedID=breedID
 
 			tmprint=format(L["this is"],petIndex)
 
-			if (breedId and ((breedId>=4 and breedId<=6) or (breedId>=14 and breedId<=16))) then
+			if (breedID and ((breedID>=4 and breedID<=6) or (breedID>=14 and breedID<=16))) then
 				tmprint=tmprint..ICON_LIST[ICON_TAG_LIST[strlower(RAID_TARGET_1)]] .. "0|t"
 			end
 
@@ -369,6 +370,7 @@ end
 function HPetBattleAny:ADDON_LOADED(_, name)
 		if name == "HPetBattleAny" and not self.initialized then
 			self:UnregisterEvent("ADDON_LOADED")
+			self:RegisterEvent("VARIABLES_LOADED");
 			self.initialized = true
 			printt("test:插件载入")
 
@@ -387,6 +389,15 @@ function HPetBattleAny:PLAYER_ENTERING_WORLD()
 	self:RegisterEvent("PET_BATTLE_OPENING_START")
 end
 
+function HPetBattleAny:VARIABLES_LOADED()
+	for v,t in pairs(self.Default) do
+		if HPetSaves[v]==nil or type(HPetSaves[v])~=type(t) then
+			printt(v,t)
+			HPetSaves[v] = t
+		end
+	end
+	if not HPetSaves.PetAblitys then HPetSaves.PetAblitys={} end
+end
 ------------------------我是和谐的分割线---------------------------------
 
 
@@ -411,8 +422,7 @@ function HPetBattleAny:initforJournalFrame()
 	button.rightArrow:Show()
 	button:SetScript("OnClick",function()
 		if HPetAllInfoFrame then
-			if not HPetAllInfoFrame.ready then HPetAllInfoFrame:Init() end
-			if not HPetAllInfoFrame:IsShown() then HPetAllInfoFrame:Open() else HPetAllInfoFrame:Hide() end
+			HPetAllInfoFrame:Open()
 		end
 	end)
 

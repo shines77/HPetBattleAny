@@ -1,5 +1,6 @@
-﻿-----####Hook2.1####
--------2.1:修复点击链接无法正确指向宠物
+﻿-----####Hook.lua 2.3####
+-------2.2:新模块，储存宠物技能组合
+-------2.3:显示和隐藏其他UI更加安全，不会再造成BLZUI错误
 
 local _
 ----- Globals
@@ -37,21 +38,6 @@ local function IDtoString(id)
 end
 --[[	init	]]--
 hookfunction.init = function()
-	PetBattlePrimaryUnitTooltip:HookScript("OnHide",function() GameTooltip:Hide() end)
-
---~ 鼠标提示加入简单的收集信息
-	GameTooltip:HookScript("OnTooltipSetUnit",function()
-		local unit = select(2,GameTooltip:GetUnit())
-		if unit and UnitIsBattlePet and UnitIsBattlePet(unit) then
-			local speciesID = UnitBattlePetSpeciesID(select(2,GameTooltip:GetUnit()))
-			local str = C_PetJournal.GetOwnedBattlePetString(speciesID)
-			if not UnitIsWildBattlePet(unit) then GameTooltip:AddLine(str) end
-			TooltipAddOtherInfo(speciesID)
-		end
-	end)
-
-	PetBattleFrame.BottomFrame.ForfeitButton:SetID(6)
-
 	for a,b in pairs(HPetBattleAny.hook) do
 		if a=="PetBattleUnitFrame_OnClick" then
 			--------------------------点击头像
@@ -73,6 +59,20 @@ hookfunction.init = function()
 		end
 		PetJournal.listScroll.update = PetJournal_UpdatePetList;
 	end
+
+	PetBattlePrimaryUnitTooltip:HookScript("OnHide",function() GameTooltip:Hide() end)
+--~ 鼠标提示加入简单的收集信息
+	GameTooltip:HookScript("OnTooltipSetUnit",function()
+		local unit = select(2,GameTooltip:GetUnit())
+		if unit and UnitIsBattlePet and UnitIsBattlePet(unit) then
+			local speciesID = UnitBattlePetSpeciesID(select(2,GameTooltip:GetUnit()))
+			local str = C_PetJournal.GetOwnedBattlePetString(speciesID)
+			if not UnitIsWildBattlePet(unit) then GameTooltip:AddLine(str) end
+			TooltipAddOtherInfo(speciesID)
+		end
+	end)
+
+	PetBattleFrame.BottomFrame.ForfeitButton:SetID(6)
 	--------------hook宠物api
 	C_PetJournal.GetOwnedBattlePetStringtemp=C_PetJournal.GetOwnedBattlePetString
 	C_PetJournal.GetOwnedBattlePetString=function(id)
@@ -89,6 +89,10 @@ hookfunction.init = function()
 			return HPetBattleAny.CreateLinkByInfo(id)
 		end
 		HP_L=function(id,mlevel,mhealth,mpower,mspeed,mrarity)
+			if mlevel==nil then
+				print(C_PetJournal.GetPetInfoBySpeciesID(id))
+				mlevel=1;mhealth=3;mpower=1
+			end
 			if mrarity~=nil then
 				local data={level=mlevel,health=mhealth,power=mpower,speed=mspeed,rarity=mrarity}
 				print(HPetBattleAny.CreateLinkByInfo(id,data))
@@ -116,11 +120,52 @@ hookfunction.init = function()
 	end
 	-----------------
 end
+--[[			]]--其他界面隐藏/显示
+hookfunction.AddFrameLock=function(lock)
+	if lock == "PETBATTLES" then
+		for k,s in pairs(HPetBattleAny.AUtoHideShowfrmae) do
+			local v = _G[k]
+			if v then
+				if type(v["originalShow"]) == "function" then
+					v:originalShow()
+				elseif type(v["Show"]) == "function" then
+					HPetBattleAny.AUtoHideShowfrmae[k]=v:IsShown() and "Shown" or "Hidden"
+					if HPetBattleAny.AUtoHideShowfrmae[k]=="Shown" then v:Hide() end
+				end
+			end
+		end
+	end
+end
+hookfunction.RemoveFrameLock=function(lock)
+	if lock == "PETBATTLES" then
+		for k,s in pairs(HPetBattleAny.AUtoHideShowfrmae) do
+			local v = _G[k]
+			if v then
+				if type(v["originalShow"]) ~= "function" and type(v["Show"]) == "function" then
+					if HPetBattleAny.AUtoHideShowfrmae[k]=="Shown" then v:Show() end
+				end
+			end
+		end
+	end
+end
+
 
 --[[	Hook	]]--petjournal
 ------	点击链接无法正确指向宠物(修复处2)
-hookfunction.PetJournal_SelectPet = function(self, id)
-	PetJournal_ShowPetCardByID(IDtoString(id));
+hookfunction.PetJournal_SelectPet = function(self, targetPetID)
+	local numPets = C_PetJournal.GetNumPets(PetJournal.isWild);
+	local petIndex = nil;
+	for i = 1,numPets do
+		local petID, speciesID, owned = C_PetJournal.GetPetInfoByIndex(i, PetJournal.isWild);
+		if (petID == IDtoString(targetPetID)) then
+			petIndex = i;
+			break;
+		end
+	end
+	if ( petIndex ) then
+		PetJournalPetList_UpdateScrollPos(self.listScroll, petIndex);
+	end
+	PetJournal_ShowPetCardByID(IDtoString(targetPetID));
 end
 ----------删除宠物，提醒消息中附带宠物颜色(貌似会导致删除宠物不可用)
 hookfunction.PetJournalUtil_GetDisplayName=function(petID)
@@ -134,27 +179,44 @@ hookfunction.PetJournalUtil_GetDisplayName=function(petID)
 end
 ----- 显示宠物/记录breedid (对没有标示品质的宠物进行标示品质)--5.1已有
 hookfunction.PetJournal_UpdatePetCard=function(self)
-	local strbreedId=""
+	local strbreedID=""
 	if PetJournalPetCard.petID then
 		local speciesID, customName, level, xp, maxXp, displayID, isFavorite, name, icon, petType, creatureID, sourceText, description, isWild, canBattle, tradable = C_PetJournal.GetPetInfoByPetID(PetJournalPetCard.petID)
 		local _,health,power,speed,rarity = C_PetJournal.GetPetStats(PetJournalPetCard.petID)
 		local petstate={["level"]=level,["health"]=health,["power"]=power,["speed"]=speed,["rarity"]=rarity}
 		if speciesID then
-			local ghealth, gpower, gspeed, breedId= HPetBattleAny.ShowMaxValue(petstate,speciesID)
+			local ghealth, gpower, gspeed, breedID= HPetBattleAny.ShowMaxValue(petstate,speciesID)
 			self.HealthFrame.health:SetText(format("%d%s",health,ghealth))
 			self.PowerFrame.power:SetText(format("%d%s",power,gpower))
 			self.SpeedFrame.speed:SetText(format("%d%s",speed,gspeed))
-			if breedId and HPetSaves.ShowBreedId then
-				strbreedId = "("..(breedId <=12 and breedId or (breedId-10)).."/"..(breedId<=12 and (breedId+10) or breedId)..")"
+			if breedID and HPetSaves.ShowBreedID then
+				strbreedID = "("..(breedID <=12 and breedID or (breedID-10)).."/"..(breedID<=12 and (breedID+10) or breedID)..")"
 			end
-			PetJournalPetCard.breedId=breedId
+			PetJournalPetCard.breedID=breedID
 		end
 	else
-		PetJournalPetCard.breedId=nil
+		PetJournalPetCard.breedID=nil
 	end
 	if PetJournalPetCard.speciesID then
 		local petType=select(3,C_PetJournal.GetPetInfoBySpeciesID(PetJournalPetCard.speciesID))
-		PetJournalPetCard.TypeInfo.type:SetText(_G["BATTLE_PET_NAME_"..petType].."("..PetJournalPetCard.speciesID..")"..strbreedId)
+		PetJournalPetCard.TypeInfo.type:SetText(_G["BATTLE_PET_NAME_"..petType].."("..PetJournalPetCard.speciesID..")"..strbreedID)
+	end
+
+	-------------------显示选择好的技能组合
+	if PetJournalPetCard.speciesID and HPetSaves.AutoSaveAbility and HPetSaves["PetAblitys"] then
+		local str = HPetSaves.PetAblitys[PetJournalPetCard.petID] or "123"
+		local abilities = {}
+		C_PetJournal.GetPetAbilityList(PetJournalPetCard.speciesID, abilities)
+		for i = 1,3 do
+			local d = tonumber(string.sub(str,i,i))
+			if d == 0 then d = i end
+				_G["PetJournalPetCardSpell"..d].icon:SetVertexColor(1,1,1,1)
+				if _G["PetJournalPetCardSpell"..((d>3) and (d-3) or (d+3))].LevelRequirement:IsShown() then
+					_G["PetJournalPetCardSpell"..((d>3) and (d-3) or (d+3))].icon:SetVertexColor(1,1,1,1)
+				else
+					_G["PetJournalPetCardSpell"..((d>3) and (d-3) or (d+3))].icon:SetVertexColor(0.4,0.4,0.4,1)
+				end
+		end
 	end
 end
 --[[	Hook	]]--petbattle
@@ -163,12 +225,12 @@ hookfunction.PetBattleUnitTooltip_UpdateForUnit = function(self, petOwner, petIn
 	local r,g,b,hex=GetItemQualityColor(C_PetBattles.GetBreedQuality(petOwner,petIndex)-1)
 	local speciesID=C_PetBattles.GetPetSpeciesID(petOwner,petIndex)
 	local name, icon, petType, creatureID, sourceText, description, isWild, canBattle, tradable = C_PetJournal.GetPetInfoBySpeciesID(speciesID)
-	local strbreedId=""
+	local strbreedID=""
 ------- 成长值
 	GameTooltip:SetOwner(self,"ANCHOR_BOTTOM");
 	if petOwner == LE_BATTLE_PET_ENEMY and HPetBattleAny.EnemyPetInfo[petIndex] then
 		local EnemyPet=HPetBattleAny.EnemyPetInfo[petIndex]
-		local ghealth, gpower, gspeed, breedId = HPetBattleAny.ShowMaxValue(EnemyPet,speciesID,true)
+		local ghealth, gpower, gspeed, breedID = HPetBattleAny.ShowMaxValue(EnemyPet,speciesID,true)
 		if ghealth~="" and ghealth~=nil then
 			local str=""
 			if HPetSaves.PetBreedInfo then
@@ -204,9 +266,9 @@ hookfunction.PetBattleUnitTooltip_UpdateForUnit = function(self, petOwner, petIn
 				end
 
 				if abilityCD~=0 then
-					name = name.." CD:"..abilityCD.."/"..maxCooldown.."|r"
+					name = name.." "..abilityCD.."/"..maxCooldown.."|r"
 				elseif maxCooldown ~= 0 then
-					name = name.." CD:"..maxCooldown.."|r"
+					name = name.." "..maxCooldown.."|r"
 				end
 
 				abilityName:SetText(name)
@@ -335,12 +397,12 @@ hookfunction.BattlePetTooltipTemplate_SetBattlePet=function(frame,data)
 		local petstate=data
 		petstate.health=data.maxHealth
 		petstate.rarity=data.breedQuality+1
-		local ghealth, gpower, gspeed, breedId= HPetBattleAny.ShowMaxValue(petstate,data.speciesID)
+		local ghealth, gpower, gspeed, breedID= HPetBattleAny.ShowMaxValue(petstate,data.speciesID)
 		frame.Health:SetText(format("%d%s",data.maxHealth,ghealth))
 		frame.Power:SetText(format("%d%s",data.power,gpower))
 		frame.Speed:SetText(format("%d%s",data.speed,gspeed))
-		if breedId then
-			frame.PetType:SetText(format("%s(%s)",frame.PetType:GetText(),breedId))
+		if breedID then
+			frame.PetType:SetText(format("%s(%s)",frame.PetType:GetText(),breedID))
 		end
 		if not frame.Name:GetText() then frame.Name:SetText(data.customName) end
 	end
@@ -351,6 +413,20 @@ hookfunction.PetBattleUnitFrame_OnClick=function(self,button)
 	if button=="LeftButton" then
 		local speciesID = C_PetBattles.GetPetSpeciesID(self.petOwner,self.petIndex)
 		if speciesID then hookfunction.FloatingBattlePet_Show(speciesID,0) end
+		if self.petOwner == 1 then
+			for i = 1, C_PetBattles.GetNumPets(self.petOwner) do
+				local petID = C_PetJournal.GetPetLoadOutInfo(i)
+				local tspeciesID, customName, level, xp, maxXp, displayID, isFavorite, name, icon, petType= C_PetJournal.GetPetInfoByPetID(petID)
+				if tspeciesID == speciesID and C_PetBattles.GetLevel(self.petOwner,self.petIndex) == level and C_PetBattles.GetXP(self.petOwner,self.petIndex) == xp and C_PetBattles.GetPetType(self.petOwner,self.petIndex) == petType and C_PetBattles.GetName(self.petOwner,self.petIndex) == (customName or name) and select(2,C_PetBattles.GetName(self.petOwner,self.petIndex)) == name then
+--~ 					if petID then
+						PetJournal_SelectPet(PetJournal,petID)
+						return
+--~ 					end
+				end
+			end
+		elseif self.petOwner == 2  then
+			if HPetAllInfoFrame.ready then HPetAllInfoFrame:Update(speciesID,HPetBattleAny.EnemyPetInfo[self.petIndex].breedID) end
+		end
 	end
 end
 
@@ -452,7 +528,7 @@ hookfunction.PetBattleFrame_UpdateAbilityButtonHotKeys=function(self)
 end
 hookfunction.StaticPopup_Show=function(str)
 	if str=="PET_BATTLE_FORFEIT" and HPetSaves.FastForfeit then
-		if not HPetSaves.Sound and HPetBattleAny.EnemyPetInfo.FindBlue then
+		if not HPetSaves.Sound and HPetBattleAny.EnemyPetInfo and HPetBattleAny.EnemyPetInfo.FindBlue then
 		else
 			StaticPopup_Hide("PET_BATTLE_FORFEIT",nil);
 			C_PetBattles.ForfeitGame()
@@ -460,15 +536,73 @@ hookfunction.StaticPopup_Show=function(str)
 	end
 end
 
---~ hookfunction.PetJournal_UpdatePetLoadOut=function(self)
---~ 	for i = 1 ,3 do
---~ 		local petID, ability1ID, ability2ID, ability3ID, locked = C_PetJournal.GetPetLoadOutInfo(i);
---~ 			HPetAbilitySaves[speciesID][i]=_G["PetJournalLoadoutPet1Spell"]..i.abilityID
---~ 	end
---~ 	print("qwe")
---~ end
---~ hookfunction.PetJournalListItem_OnClick=function(self, button)
---~ print("asd")
---~ end
+----技能ID
+hookfunction.SharedPetBattleAbilityTooltip_SetAbility=function(self, abilityInfo, additionalTex)
+	local abilityID = abilityInfo:GetAbilityID();
+	local name = select(2, C_PetBattles.GetAbilityInfoByID(abilityID))
+	self.Name:SetText(name.."("..abilityID..")");
+end
 
--------------/run C_PetJournal.SetAbility(1,1, PetJournal.SpellSelect.Spell2.abilityID)
+
+
+
+
+
+
+
+---------------------------手动xxxxxxxxxx
+for i = 1, 6 do
+	_G["PetJournalPetCardSpell"..i]:SetScript("OnClick",function(self)
+		if not PetJournalPetCard.petID then return end
+		if (not IsModifiedClick() and not self.LevelRequirement:IsShown()) or (IsModifiedClick() and self.LevelRequirement:IsShown()) then
+			local pos = string.gsub("%1%2%3","(.*)(%%"..((i>3) and (i-3) or i)..")(.*)","%1"..i.."%3")
+			if pos then
+				HPetSaves.PetAblitys[PetJournalPetCard.petID] = string.gsub(HPetSaves.PetAblitys[PetJournalPetCard.petID] or "000","^(.)(.)(.)$",pos)
+			end
+			PetJournal_UpdatePetCard(PetJournalPetCard)
+		end
+	end)
+end
+---------------------------自动保存设置宠物技能组合
+local SaveSkillInfo = function(loadoutID,index,abilityID)
+	if not HPetSaves.AutoSaveAbility then return end
+	if not HPetSaves.PetAblitys then HPetSaves.PetAblitys={} end
+
+	local abilities = PetJournal.Loadout["Pet"..loadoutID].abilities
+	if not abilities then return end
+
+	local petID = C_PetJournal.GetPetLoadOutInfo(loadoutID)
+	local pos
+	if abilityID == abilities[index] then
+		pos = string.gsub("%1%2%3","(.*)(%%"..index..")(.*)","%1"..index.."%3")
+	elseif abilityID == abilities[index+3] then
+		pos = string.gsub("%1%2%3","(.*)(%%"..index..")(.*)","%1"..(index+3).."%3")
+	end
+	if pos then
+		HPetSaves.PetAblitys[petID] = string.gsub(HPetSaves.PetAblitys[petID] or "123","^(.)(.)(.)$",pos)
+	end
+end
+
+local LoadSkillInfo = function(loadoutID,petID)
+	if not HPetSaves.AutoSaveAbility then return end
+	if not HPetSaves.PetAblitys then HPetSaves.PetAblitys={} end
+
+	local str = HPetSaves.PetAblitys[petID]
+	if not str then return end
+
+	local petID = C_PetJournal.GetPetLoadOutInfo(loadoutID)
+	local speciesID = C_PetJournal.GetPetInfoByPetID(petID)
+	local abilities = {}
+	C_PetJournal.GetPetAbilityList(speciesID, abilities)
+	for i = 1,3 do
+		local skindex = tonumber(string.sub(str,i,i))
+		local abilityID = abilities[skindex]
+		if abilityID and skindex ~= i then
+			C_PetJournal.SetAbility(loadoutID, i, abilityID)
+		end
+	end
+end
+
+
+hooksecurefunc(C_PetJournal, "SetAbility",SaveSkillInfo)
+hooksecurefunc(C_PetJournal,"SetPetLoadOutInfo",LoadSkillInfo)

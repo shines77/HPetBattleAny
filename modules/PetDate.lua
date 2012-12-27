@@ -1,5 +1,5 @@
-﻿-----####PedDate1.41####
--------1.41:再次增加部分数据
+﻿-----####PetDate.lua 1.43####
+-------1.43:修复之前导致的错误品质切换错误
 
 local _,k,v
 --- Globals
@@ -588,9 +588,9 @@ HPetDate={
 [974]={8,8,8,{}},
 [975]={8,8,8,{}},
 [976]={8,8,8,{}},
-[977]={8.5,8.5,8.5,{}},
-[978]={8.5,8.5,8.5,{}},
-[979]={8.5,8.5,8.5,{}},
+[977]={8.5,8.5,8.5,{9}},
+[978]={8.5,8.5,8.5,{8}},
+[979]={8.5,8.5,8.5,{6}},
 [980]={8.5,8.5,8.5,{}},
 [981]={8.5,8.5,8.5,{}},
 [982]={8.5,8.5,8.5,{}},
@@ -600,27 +600,27 @@ HPetDate={
 [986]={8.5,8.5,8.5,{}},
 [987]={8.5,8.5,8.5,{}},
 [988]={8.5,8.5,8.5,{}},
-[989]={8,8,8,{}},
-[990]={8,8,8,{}},
-[991]={8,8,8,{}},
-[992]={8,8,8,{}},
-[993]={8,8,8,{}},
-[994]={8,8,8,{}},
+[989]={8,8,8,{9}},
+[990]={8,8,8,{5}},
+[991]={8,8,8,{8}},
+[992]={8,8,8,{6}},
+[993]={8,8,8,{5}},
+[994]={8,8,8,{8}},
 [995]={8,8,8,{9}},
 [996]={8,8,8,{6}},
 [997]={8,8,8,{7}},
-[998]={8,8,8,{}},
-[999]={8,8,8,{}},
-[1000]={8,8,8,{}},
-[1001]={8,8,8,{}},
-[1002]={9,9,9,{}},
-[1003]={9,9,9,{}},
-[1004]={8,8,8,{}},
-[1005]={8,8,8,{}},
-[1006]={8,8,8,{}},
-[1007]={8,8,8,{}},
-[1008]={8,8,8,{}},
-[1009]={8,8,8,{}},
+[998]={8,8,8,{9}},
+[999]={8,8,8,{6}},
+[1000]={8,8,8,{8}},
+[1001]={8,8,8,{8}},
+[1002]={9,9,9,{9}},
+[1003]={9,9,9,{9}},
+[1004]={8,8,8,{9}},
+[1005]={8,8,8,{9}},
+[1006]={8,8,8,{6}},
+[1007]={8,8,8,{4}},
+[1008]={8,8,8,{6}},
+[1009]={8,8,8,{7}},
 [1010]={8,8,8,{8}},
 [1011]={8,8,8,{7}},
 [1012]={8,8,8,{5}},
@@ -630,9 +630,9 @@ HPetDate={
 [1042]={6.75,10.5,6.75,{8}},
 [1061]={8,8,8,{5}},
 [1062]={8,7.5,8.5,{3,9,10,12}},
-[1065]={8,8,8,{}},
-[1066]={8,8,8,{}},
-[1067]={8,8,8,{}},
+[1065]={8,8.5,7.5,{8}},
+[1066]={8,8,8,{10}},
+[1067]={8.5,7.5,8,{7}},
 [1073]={8,8,8,{22}},
 [1124]={8,8,8,{8}},
 [1125]={8,8,8,{3}},
@@ -681,10 +681,36 @@ HPetDate={
 
 
 [1068]={8,8,8,{3,5,8,10,13,15,18,20}},
-[1063]={8,8,8,{3,12,13,22}},
+[1063]={8.5,8.5,7,{8}},
 [1117]={7,8.5,8.5,{3}},
-[513]={8,8,8},
+[513]={8,8,8},-------等待夏天
 }
+--http://schaffhauser.me/api/wow/data/pet/stats/id
+HPetDate.GetBreedByID=function(breedID)
+	if breedID==3 or breedID==13 then
+		return 0.5,0.5,0.5
+	elseif breedID==4 or breedID==14 then
+		return 0,2,0
+	elseif breedID==5 or breedID==15 then
+		return 0,0,2
+	elseif breedID==6 or breedID==16 then
+		return 2,0,0
+	elseif breedID==7 or breedID==17 then
+		return 0.9,0.9,0
+	elseif breedID==8 or breedID==18 then
+		return 0,0.9,0.9
+	elseif breedID==9 or breedID==19 then
+		return 0.9,0,0.9
+	elseif breedID==10 or breedID==20 then
+		return 0.4,0.9,0.4
+	elseif breedID==11 or breedID==21 then
+		return 0.4,0.4,0.9
+	elseif breedID==12 or breedID==22 then
+		return 0.9,0.4,0.4
+	end
+	return
+end
+
 HPetDate.SearchNoPet=function()
 	for i = 1 , 600 do
 		if select(15,C_PetJournal.GetPetInfoByIndex(i)) then
@@ -703,15 +729,15 @@ HPetDate.GetBreedValue=function(petstate,speciesID,ifprint)
 	if petstate and  speciesID and HPetDate[speciesID] then
 		local thealth,tpower,tspeed = HPetDate[speciesID][1],HPetDate[speciesID][2],HPetDate[speciesID][3]
 		local bhealth,bpower,bspeed
-		local breedId
+		local breedID
 
-		local GetBreedIdbySystem = function()
+		local GetBreedIDbySystem = function()
 			for i = 3 , 12 do
 				bhealth,bpower,bspeed=HPetDate.GetBreedByID(i)
 				if math.abs(format("%.1f",(bhealth+thealth)*5*level*breed+100) - format("%.0f",health)) <= 0.5*5 then
 					if math.abs(format("%.1f",(bpower+tpower)*level*breed) - format("%.0f",power)) <= 0.5 then
 						if math.abs(format("%.1f",(bspeed+tspeed)*level*breed) - format("%.0f",speed)) <= 0.5*(isflying and 1.5 or 1) then
-							breedId=i
+							breedID=i
 							return true
 						end
 					end
@@ -719,14 +745,14 @@ HPetDate.GetBreedValue=function(petstate,speciesID,ifprint)
 			end
 			return false
 		end
-		local GetBreedIdbyPetDate = function()
+		local GetBreedIDbyPetDate = function()
 			if not HPetDate[speciesID][4] then return false end
 			for _,i in pairs(HPetDate[speciesID][4]) do
 				bhealth,bpower,bspeed=HPetDate.GetBreedByID(i)
 				if math.abs(format("%.1f",(bhealth+thealth)*5*level*breed+100) - format("%.0f",health)) <= 0.5*5 then
 					if math.abs(format("%.1f",(bpower+tpower)*level*breed) - format("%.0f",power)) <= 0.5 then
 						if math.abs(format("%.1f",(bspeed+tspeed)*level*breed) - format("%.0f",speed)) <= 0.5*(isflying and 1.5 or 1)  then
-							breedId=i
+							breedID=i
 							return true
 						end
 					end
@@ -737,32 +763,32 @@ HPetDate.GetBreedValue=function(petstate,speciesID,ifprint)
 		local SaveNewpetstate = function()
 			if HPetSaves.god then
 				if not HPetDate[speciesID][4] then HPetDate[speciesID][4]={} end
-				local HasId=function()
+				local HasID=function()
 					for k,v in pairs(HPetDate[speciesID][4]) do
-						if breedId == tonumber(v) or breedId+10 == tonumber(v) then return true end
+						if breedID == tonumber(v) or breedID+10 == tonumber(v) then return true end
 					end
 					return false
 				end
-				if not HasId() then
+				if not HasID() then
 					if not HPetSaves.HPetOtherDate then HPetSaves.HPetOtherDate={} end
 					if not HPetSaves.HPetOtherDate[speciesID] then HPetSaves.HPetOtherDate[speciesID]={} end
-					table.insert(HPetDate[speciesID][4],breedId)
+					table.insert(HPetDate[speciesID][4],breedID)
 				end
 			end
 		end
 
-		if GetBreedIdbyPetDate() then
+		if GetBreedIDbyPetDate() then
 			if ifprint then
-				return bhealth+thealth,bpower+tpower,bspeed+tspeed,breedId
+				return bhealth+thealth,bpower+tpower,bspeed+tspeed,breedID
 			else
-				return bhealth,bpower,bspeed,breedId,thealth,tpower,tspeed
+				return bhealth,bpower,bspeed,breedID,thealth,tpower,tspeed
 			end
-		elseif GetBreedIdbySystem() then
+		elseif GetBreedIDbySystem() then
 			printt("宠物数据未收集")
 			if ifprint then
-				return bhealth+thealth,bpower+tpower,bspeed+tspeed,breedId
+				return bhealth+thealth,bpower+tpower,bspeed+tspeed,breedID
 			else
-				return bhealth,bpower,bspeed,breedId,thealth,tpower,tspeed
+				return bhealth,bpower,bspeed,breedID,thealth,tpower,tspeed
 			end
 		end
 		printt("宠物数据异常")
@@ -778,31 +804,6 @@ HPetDate.GetBreedValue=function(petstate,speciesID,ifprint)
 	local bspeed=format("%.1f",speed/level/breed)
 
 	return	bhealth,bpower,bspeed,nil,0,0,0
-end
-
-HPetDate.GetBreedByID=function(breedId)
-	if breedId==3 or breedId==13 then
-		return 0.5,0.5,0.5
-	elseif breedId==4 or breedId==14 then
-		return 0,2,0
-	elseif breedId==5 or breedId==15 then
-		return 0,0,2
-	elseif breedId==6 or breedId==16 then
-		return 2,0,0
-	elseif breedId==7 or breedId==17 then
-		return 0.9,0.9,0
-	elseif breedId==8 or breedId==18 then
-		return 0,0.9,0.9
-	elseif breedId==9 or breedId==19 then
-		return 0.9,0,0.9
-	elseif breedId==10 or breedId==20 then
-		return 0.4,0.9,0.4
-	elseif breedId==11 or breedId==21 then
-		return 0.4,0.4,0.9
-	elseif breedId==12 or breedId==22 then
-		return 0.9,0.4,0.4
-	end
-	return
 end
 
 HPetDate.GetIDByBreed=function(h,p,s)
@@ -826,18 +827,24 @@ local backdrop={
 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 	edgeSize = 16,
 }
-local TABLE1={"BreedId","Health","Power","Speed"}
+local TABLE1={"BreedID","Health","Power","Speed"}
 local TABLE2={"Health","Power","Speed"}
 local LINECOLOR={0.5, 0.5, 0.5, 1}
 local SELFHEIGHT = 0
-function HPetAllInfoFrame:Update(speciesID,breedId,rarityvalue)
-	if not HPetAllInfoFrame:IsShown() or not PetJournalPetCard.speciesID then return end
+function HPetAllInfoFrame:Update(speciesID,breedID,rarityvalue)
 	local selfheight = SELFHEIGHT
-	local speciesID=PetJournalPetCard.speciesID
-	local breedId=PetJournalPetCard.breedId
-	local rarityvalue=rarityvalue
+	local speciesID = speciesID or PetJournalPetCard.speciesID
+	local breedID = breedID or PetJournalPetCard.breedID;PetJournalPetCard.breedID=breedID
+	local rarityvalue = rarityvalue or HPetAllInfoFrame.rarityvalue or 4
+	if not HPetAllInfoFrame:IsShown() or not speciesID then return end
 
-	local name, icon, petType, creatureID, sourceText, description, isWild, canBattle, tradable, unique = C_PetJournal.GetPetInfoBySpeciesID(PetJournalPetCard.speciesID);
+	if self ~= HPetAllInfoFrame and not HPetAllInfoFrame.lockrarity then
+		if PetJournalPetCard.petID then
+			rarityvalue = select(5,C_PetJournal.GetPetStats(PetJournalPetCard.petID))
+		end
+	end
+
+	local name, icon, petType, creatureID, sourceText, description, isWild, canBattle, tradable, unique = C_PetJournal.GetPetInfoBySpeciesID(speciesID);
 
 	HPetAllInfoFrame.petName.text:SetText(name)
 	HPetAllInfoFrame.petName.icon:SetTexture("Interface\\Icons\\Pet_TYPE_"..PET_TYPE_SUFFIX[petType])
@@ -845,22 +852,15 @@ function HPetAllInfoFrame:Update(speciesID,breedId,rarityvalue)
 
 	----------------------------------------------------------------
 	local pet=HPetDate[speciesID]
-	height=SELFHEIGHT + HPetAllInfoFrame.baseTable.UpdateInfo(pet,breedId)
+	height=SELFHEIGHT + HPetAllInfoFrame.baseTable.UpdateInfo(pet,breedID)
 
 
 	----------------------------------------------------------------
-	if self ~= HPetAllInfoFrame and not HPetAllInfoFrame.lockrarity then
-		if petID then
-			HPetAllInfoFrame.rarityvalue = rarityvalue or select(5,C_PetJournal.GetPetStats(petID))
-		else
-			HPetAllInfoFrame.rarityvalue = 4
-		end
-	end
 	if HPetAllInfoFramerarityButton then
-		HPetAllInfoFramerarityButton:SetText(format(ITEM_QUALITY_COLORS[HPetAllInfoFrame.rarityvalue-1].hex.."%s|r",(_G["BATTLE_PET_BREED_QUALITY"..HPetAllInfoFrame.rarityvalue])))
+		HPetAllInfoFramerarityButton:SetText(format(ITEM_QUALITY_COLORS[rarityvalue-1].hex.."%s|r",(_G["BATTLE_PET_BREED_QUALITY"..rarityvalue])))
 	end
 
-	HPetAllInfoFrame.levelTable.UpdateInfo(pet,PetJournalPetCard.breedId,25,HPetAllInfoFrame.rarityvalue)
+	HPetAllInfoFrame.levelTable.UpdateInfo(pet,breedID,25,rarityvalue)
 
 	HPetAllInfoFrame:UpdateSize(height);
 	updateElapsed = 0
@@ -970,7 +970,6 @@ function HPetAllInfoFrame:Init()
 	SELFHEIGHT = 90
 	self:initframe(frames)
 	self:CreateDropDown("rarity")
-	self.rarityvalue = 4
 	self.lockrarity = true
 	--------------------------------------CheckButton1
 	local lock=CreateFrame("CheckButton",self:GetName().."lockrarity",_G[self:GetName().."rarity"],"OptionsCheckButtonTemplate")
@@ -1052,7 +1051,7 @@ function HPetAllInfoFrame:CreateDropDown(name,dtype)
 									HPetAllInfoFramerarityButton:SetText(format(ITEM_QUALITY_COLORS[i-1].hex.."%s|r",(_G["BATTLE_PET_BREED_QUALITY"..i])))
 								end
 								HPetAllInfoFrame[name.."value"] = i
-								HPetAllInfoFrame:Update()
+								HPetAllInfoFrame:Update(nil,nil,i)
 							end
 				UIDropDownMenu_AddButton(info, level)
 			end
@@ -1080,14 +1079,14 @@ end
 function HPetAllInfoFrame:CreateTable(name,useTABLE,width,height,point,relative,repoint,h,x,y)
 	local rt={}
 	rt.index=#useTABLE
-	rt.UpdateInfo=function(pet,breedId,level,rarity)
+	rt.UpdateInfo=function(pet,breedID,level,rarity)
 		local useline = true
 		local selfheight = 0
 		for i = h and 0 or 1, 20 do
 			if pet and pet[4] and pet[4][i] then
 				local h,p,s = HPetDate.GetBreedByID(pet[4][i])
 				local info = {pet[4][i],{pet[1],h},{pet[2],p},{pet[3],s}}
-				local light= breedId and (breedId==pet[4][i] or breedId-10==pet[4][i] or breedId+10==pet[4][i]) or nil
+				local light= breedID and (breedID==pet[4][i] or breedID-10==pet[4][i] or breedID+10==pet[4][i]) or nil
 
 				rt["table"..i]:SetInfo(info,level,rarity,light)
 				rt["table"..i]:Show()
@@ -1278,7 +1277,8 @@ function HPetAllInfoFrame:initframe(frames)
 	end
 end
 
-function HPetAllInfoFrame:Open()
-	self:Show()
-	self:Update()
+function HPetAllInfoFrame:Open(...)
+	if not self.ready then self:Init() end
+	if not self:IsShown() then self:Show() else self:Hide() end
+	self:Update(...)
 end
