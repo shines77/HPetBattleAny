@@ -1,5 +1,8 @@
-﻿-----####Ability1.46####
+﻿-----####Ability1.5####
+----------1.45：稍微模块化了一下
 ----------1.46：隐藏按钮的快捷键图标
+----------1.5：模块化(设置函数没有未独立出来)
+
 local _
 --~ Globals
 local _G = getfenv(0)
@@ -215,102 +218,107 @@ local Backdrop={
 	}
 
 HAbiFrame = CreateFrame("frame","HAbiFrameTemp",PetBattleFrame)
+function CreateAbilityList(targetname)
+	function HAbiFrame:Init(unit)
+		self:SetSize("215","85")
+		self:SetToplevel(true)
+	--~ 	self:SetClampedToScreen(true)
+		self:SetMovable(true)
+	--~ 	self:SetBackdrop(Backdrop);
+		self:SetBackdropColor(0,0,0)
 
-function HAbiFrame:Init(unit)
-	self:SetSize("215","85")
-	self:SetToplevel(true)
---~ 	self:SetClampedToScreen(true)
-	self:SetMovable(true)
---~ 	self:SetBackdrop(Backdrop);
-	self:SetBackdropColor(0,0,0)
+		self.unit=unit
 
-	self.unit=unit
+		self:SetScript('OnEvent',self.Update)
+		self:RegisterEvent('PET_BATTLE_PET_CHANGED')
+		self:RegisterEvent('PET_BATTLE_PET_ROUND_PLAYBACK_COMPLETE')
+		self:RegisterEvent("PET_BATTLE_OPENING_START");
 
-	self:SetScript('OnEvent',self.Update)
-	self:RegisterEvent('PET_BATTLE_PET_CHANGED')
-	self:RegisterEvent('PET_BATTLE_PET_ROUND_PLAYBACK_COMPLETE')
-	self:RegisterEvent("PET_BATTLE_OPENING_START");
-
-end
-
-function HAbiFrame:GetPetXY()
-	if PetBattleFrame and PetBattleFrame[self.unit] then
-		return PetBattleFrame[self.unit].petOwner,PetBattleFrame[self.unit].petIndex
-	else
-		return 2,1
 	end
-end
 
-function HAbiFrame:SetUnit(str)
-	self.unit=str
-	self:Update()
-end
-
-function HAbiFrame:Update()
-	if self.AbilityButtons==nil then
-		self.AbilityButtons={}
-		self:InitButton()
-		self:Ref()
-	end
-	for i=1, #self.AbilityButtons do
-		local button = self.AbilityButtons[i];
-		PetBattleAbilityButton_UpdateIconshook(button);
-		PetBattleActionButton_UpdateStatehook(button);
-	end
-end
-
-function HAbiFrame:Ref()
-		if not HPetSaves.EnemyAbPoint then HPetSaves.EnemyAbPoint={} end
-
-		HPetSaves.EnemyAbScale=HPetSaves.EnemyAbScale or 0.8
-
-		self:SetScale(HPetSaves.EnemyAbScale)
-
-		self:SetPoint(HPetSaves.EnemyAbPoint[1] or 'BOTTOM',
-			HPetSaves.EnemyAbPoint[2] or nil,
-			HPetSaves.EnemyAbPoint[3] or 'BOTTOM',
-			HPetSaves.EnemyAbPoint[4] or '300',
-			HPetSaves.EnemyAbPoint[5] or '170')
-
-		if HPetSaves.EnemyAbility then
-			self:Show()
+	function HAbiFrame:GetPetXY()
+		if PetBattleFrame and PetBattleFrame[self.unit] then
+			return PetBattleFrame[self.unit].petOwner,PetBattleFrame[self.unit].petIndex
 		else
-			self:Hide()
+			return 2,1
 		end
-end
-
-function HAbiFrame:InitButton()
-	for i=1, NUM_BATTLE_PET_ABILITIES do
-		local Button = self.AbilityButtons[i];
-		if ( not Button ) then
-			self.AbilityButtons[i] = CreateFrame("CheckButton", nil, self, "PetBattleAbilityButtonTemplate", i);
-		end
-		Button=self.AbilityButtons[i]
-
-		Button:SetPoint('LEFT', (Button:GetWidth() + 5) * (i-1)+25, 0)
-		Button:SetScript('OnEnter', PetBattleAbilityButton_OnEnterhook)
-
-		Button:SetScript('OnClick',nil)
-		Button.HotKey:Hide()
-		Button:RegisterForDrag("LeftButton")
-		Button:SetScript("OnDragStart",function(self) if HPetSaves and not HPetSaves.LockEnemyAbility then self:GetParent():StartMoving() end end)
-		Button:SetScript("OnDragStop",function(self)
-			if HPetSaves and not HPetSaves.LockEnemyAbility then self:GetParent():StopMovingOrSizing() end
-			if HPetSaves then
-				HPetSaves.EnemyAbPoint = {self:GetParent():GetPoint()}
-				if HPetSaves.EnemyAbPoint[2] then HPetSaves.EnemyAbPoint[2]=HPetSaves.EnemyAbPoint[2]:GetName()end
-			end
-
-		end)
-
-		Button:SetHighlightTexture(nil)
-		Button:SetPushedTexture(nil)
-		Button:UnregisterAllEvents()
-
-		Button = self.AbilityButtons[i];
-		Button:Show()
-		Button:SetFrameLevel(self:GetFrameLevel() + 1, Button);
 	end
+
+	function HAbiFrame:SetUnit(str)
+		self.unit=str
+		self:Update()
+	end
+
+	function HAbiFrame:Update()
+		if self.AbilityButtons==nil then
+			self.AbilityButtons={}
+			self:InitButton()
+			self:Ref()
+		end
+		for i=1, #self.AbilityButtons do
+			local button = self.AbilityButtons[i];
+			PetBattleAbilityButton_UpdateIconshook(button);
+			PetBattleActionButton_UpdateStatehook(button);
+		end
+	end
+
+	function HAbiFrame:Ref()
+			if not HPetSaves.EnemyAbPoint then HPetSaves.EnemyAbPoint={} end
+
+			HPetSaves.EnemyAbScale=HPetSaves.EnemyAbScale or 0.8
+
+			self:SetScale(HPetSaves.EnemyAbScale)
+
+			self:SetPoint(HPetSaves.EnemyAbPoint[1] or 'BOTTOM',
+				HPetSaves.EnemyAbPoint[2] or nil,
+				HPetSaves.EnemyAbPoint[3] or 'BOTTOM',
+				HPetSaves.EnemyAbPoint[4] or '300',
+				HPetSaves.EnemyAbPoint[5] or '170')
+
+			if HPetSaves.EnemyAbility then
+				self:Show()
+			else
+				self:Hide()
+			end
+	end
+
+	function HAbiFrame:InitButton()
+		for i=1, NUM_BATTLE_PET_ABILITIES do
+			local Button = self.AbilityButtons[i];
+			if ( not Button ) then
+				self.AbilityButtons[i] = CreateFrame("CheckButton", nil, self, "PetBattleAbilityButtonTemplate", i);
+			end
+			Button=self.AbilityButtons[i]
+
+			Button:SetPoint('LEFT', (Button:GetWidth() + 5) * (i-1)+25, 0)
+			Button:SetScript('OnEnter', PetBattleAbilityButton_OnEnterhook)
+
+			Button:SetScript('OnClick',nil)
+			Button.HotKey:Hide()
+			Button:RegisterForDrag("LeftButton")
+			Button:SetScript("OnDragStart",function(self) if HPetSaves and not HPetSaves.LockEnemyAbility then self:GetParent():StartMoving() end end)
+			Button:SetScript("OnDragStop",function(self)
+				if HPetSaves and not HPetSaves.LockEnemyAbility then self:GetParent():StopMovingOrSizing() end
+				if HPetSaves then
+					HPetSaves.EnemyAbPoint = {self:GetParent():GetPoint()}
+					if HPetSaves.EnemyAbPoint[2] then HPetSaves.EnemyAbPoint[2]=HPetSaves.EnemyAbPoint[2]:GetName()end
+				end
+
+			end)
+
+			Button:SetHighlightTexture(nil)
+			Button:SetPushedTexture(nil)
+			Button:UnregisterAllEvents()
+
+			Button = self.AbilityButtons[i];
+			Button:Show()
+			Button:SetFrameLevel(self:GetFrameLevel() + 1, Button);
+		end
+	end
+
+	HAbiFrame:Init(targetname)
+
+	return HAbiFrame
 end
 
-HAbiFrame:Init("ActiveEnemy")
+CreateAbilityList("ActiveEnemy")

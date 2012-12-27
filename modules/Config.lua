@@ -1,5 +1,6 @@
------####Config1.361####
------1.36增加放弃快捷键是否确认
+-----####Config1.37####
+-----1.37增加鼠标提示信息的开关
+
 local _
 --~ Globals
 local _G = getfenv(0)
@@ -83,11 +84,11 @@ function HPetOption:InitButtons()
 
 		----value buttons
 		{name="Message",type="CheckButton",var="ShowMsg",
-			point="TOPLEFT",x=20,y=-35
+			point="TOPLEFT",x=15,y=-35
 		},
 		{name="Sound",type="CheckButton",var="Sound",
 			point="LEFT",relative="Message",rpoint="RIGHT",
-			x=100,
+			x=130,
 		},
 
 		{name="OnlyInPetInfo",type="CheckButton",var="OnlyInPetInfo",
@@ -95,7 +96,7 @@ function HPetOption:InitButtons()
 		},
 		{name="HighGlow",type="CheckButton",var="HighGlow",
 			point="LEFT",relative="OnlyInPetInfo",rpoint="RIGHT",
-			x=100,
+			x=130,
 		},
 
 		{name="PetGrowInfo",type="CheckButton",var="ShowGrowInfo",
@@ -103,7 +104,7 @@ function HPetOption:InitButtons()
 		},
 		{name="PetGreedInfo",type="CheckButton",var="PetGreedInfo",
 			point="LEFT",relative="PetGrowInfo",rpoint="RIGHT",
-			x=100,
+			x=130,
 		},
 
 		{name="PetBreedInfo",type="CheckButton",var="PetBreedInfo",
@@ -111,11 +112,15 @@ function HPetOption:InitButtons()
 		},
 		{name="ShowBreedId",type="CheckButton",var="ShowBreedId",
 			point="LEFT",relative="PetBreedInfo",rpoint="RIGHT",
-			x=100,
+			x=130,
 		},
 
 		{name="FastForfeit",type="CheckButton",var="FastForfeit",
 			point="TOP",relative="PetBreedInfo",rpoint="BOTTOM",
+		},
+		{name="OtherTooltip",type="CheckButton",var="Tooltip",
+			point="LEFT",relative="FastForfeit",rpoint="RIGHT",
+			x=130,
 		},
 
 		{name="EnemyAbility",type="CheckButton",var="EnemyAbility",
@@ -124,7 +129,7 @@ function HPetOption:InitButtons()
 
 		{name="LockEnemyAbility",type="CheckButton",var="LockEnemyAbility",
 			point="LEFT",relative="EnemyAbility",rpoint="RIGHT",
-			x=100,
+			x=130,
 		},
 
 		-- Sliders
@@ -222,7 +227,7 @@ function HPetOption:InitButtons()
 
 		if L[value.name.."Tooltip"] then
 			button:SetScript("OnEnter", function(s)
-				self:CheckButton_OnEnter(s,L[value.name.."Tooltip"])
+				self:CheckButton_OnEnter(s,L[value.name],L[value.name.."Tooltip"])
 			end)
 		end
 	end
@@ -271,10 +276,11 @@ function HPetOption:OnScaleChanged()
 	self.text:SetText(self.title.." : "..math.floor(scale*100).."%")
 end
 
-function HPetOption:CheckButton_OnEnter(button,message)
+function HPetOption:CheckButton_OnEnter(button,name,message)
 	GameTooltip:SetOwner(button,"ANCHOR_NONE");
 	GameTooltip:SetPoint("BOTTOMLEFT",button,"TOPRIGHT")
-	GameTooltip:AddLine(message, 1, 1, 0, true);
+	GameTooltip:AddLine(name);
+	GameTooltip:AddLine(message,1,1,1);
 	GameTooltip:Show()
 end
 

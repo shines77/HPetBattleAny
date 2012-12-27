@@ -1,4 +1,4 @@
-﻿## Interface: 50001
+﻿## Interface: 50100
 ## Title:|cFFBF00FF[H]|r Something About Pet Battle
 ## Notes:Something About Pet Battle,Type /hpq to config
 ## Title-zhCN: |cFFBF00FF[H]|r 宠物对战增强
@@ -9,8 +9,8 @@
 ## Author-zhCN: 上官晓雾
 ## Author-zhTW: 上官曉霧
 
-## X-Date: 2012-11-21
-## Version: 1.376
+## X-Date: 2012-12-04
+## Version: 1.4
 
 ## Dependencies: Blizzard_PetJournal
 ## SavedVariables: HPetSaves

@@ -1,5 +1,5 @@
-﻿-----####HPetBattleAny1.74####
-----1.74:尝试给那些不能被收集的宠物链接显示名字.(未测试)
+﻿-----####HPetBattleAny2.0####
+----2.0:petid 不能为0必须为"0x0000000000000000",外加很多对应5.1的修改
 
 local _
 --- Globals
@@ -48,6 +48,7 @@ function HPetBattleAny:GetDefault()
 		EnemyAbScale=0.8,			--敌对技能大小
 		OnlyInPetInfo=false,
 		HighGlow=true,				--战斗中用品质颜色对宠物头像着色
+		Tooltip=false,				--额外鼠标提示
 	}
 end
 
@@ -102,7 +103,7 @@ function HPetBattleAny:PetPrintEX(str,...)
 end
 -----	创建宠物链接
 function HPetBattleAny.CreateLinkByInfo(petid,petstate,usecustom)
-	if petid == 0 then return nil end
+	if petid == 0 or petid == "0x0000000000000000" or not petid then return nil end
 	local name,speciesID,customName
 	if not petstate then
 		petstate={}
@@ -111,7 +112,7 @@ function HPetBattleAny.CreateLinkByInfo(petid,petstate,usecustom)
 		if not speciesID then return end
 		if not usecustom then customName = nil end
 	else	--没有唯一ID说明petid就是唯一ID
-		speciesID,petid = petid,0
+		speciesID,petid = petid,"0x0000000000000000"
 	end
 
 	name = petstate.name or customName or C_PetJournal.GetPetInfoBySpeciesID(speciesID)
@@ -134,7 +135,7 @@ function HPetBattleAny.CreateLinkByInfo(petid,petstate,usecustom)
 	end
 	return
 end
-
+-----	成长值
 function HPetBattleAny.ShowMaxValue(petstate,speciesID,point)
 	if not petstate or petstate.rarity<1 then return end
 	local breed = tonumber("1."..((petstate and petstate.rarity-1) or 0))
@@ -201,14 +202,13 @@ function HPetBattleAny.ShowMaxValue(petstate,speciesID,point)
 end
 
 -----	调出宠物收集信息(已有宠物信息)
-function HPetBattleAny:GetPetCollectedInfo(pets,enemypet,islink)
+function HPetBattleAny:GetPetCollectedInfo(pets,enemypet,islink,mini)
 	local str1=""
 	local str2=""
 	if enemypet and enemypet.level then
-		if enemypet.level>15 then
-			enemypet.level = enemypet.level-1
-		end
 		if enemypet.level>20 then
+			enemypet.level = enemypet.level-2
+		elseif enemypet.level>15 then
 			enemypet.level = enemypet.level-1
 		end
 	end
@@ -221,14 +221,14 @@ function HPetBattleAny:GetPetCollectedInfo(pets,enemypet,islink)
 		end
 		for i,petInfo in pairs(pets) do
 			local petlink
-			local _,custname,_,_,_,_,name=C_PetJournal.GetPetInfoByPetID(petInfo.petID)
+			local _,custname,_,_,_,_,_,name=C_PetJournal.GetPetInfoByPetID(petInfo.petID)
 
 			if islink then
 				petlink=HPetBattleAny.CreateLinkByInfo(petInfo.petID or 0,nil,true)
 			end
 
 			if not petlink then
-				if custname or name then
+				if (custname or name) and not mini then
 					petlink=ITEM_QUALITY_COLORS[petInfo.rarity-1].hex..(custname or name).."|r"
 				else
 					petlink=ITEM_QUALITY_COLORS[petInfo.rarity-1].hex.._G["BATTLE_PET_BREED_QUALITY"..petInfo.rarity].."|r"
@@ -236,11 +236,13 @@ function HPetBattleAny:GetPetCollectedInfo(pets,enemypet,islink)
 				end
 			end
 
-
 			if petlink then
-				if LEVEL_COLLECTED then str2 = format(LEVEL_COLLECTED.."%s",petInfo.level,str2) end
-				str2 = petlink..str2
-				if not islink then str2="|n"..str2 end
+				if LEVEL_COLLECTED then petlink = format(LEVEL_COLLECTED.."%s",petInfo.level,petlink) end
+				if islink or str2=="" then
+					str2 = petlink..str2
+				else
+					str2=petlink.."|n"..str2
+				end
 			end
 		end
 	else
@@ -297,7 +299,7 @@ self.EnemyPetInfo={}
 			if HPetSaves.Contrast or true then
 				local str1,str2 = HPetBattleAny:GetPetCollectedInfo(mPet,{["level"]=level,["rarity"]=rarity,["speciesID"]=speciesID},true)
 				tmprint = tmprint..str1..str2
---~ 				if string.find(str1,"ffff0000") then self.EnemyPetInfo.FindBlue=true else self.EnemyPetInfo.FindBlue=false end
+--~ 				if string.find(str1,"ffff0000") then self.EnemyPetInfo.FindBlue=true end
 			end
 
 			if HPetSaves.ShowMsg then
@@ -316,14 +318,14 @@ end
 --[[	OnEvent:					PET_JOURNAL_LIST_UPDATE		]]--
 
 function HPetBattleAny:PET_JOURNAL_LIST_UPDATE()
-	if (HPetSaves.Contrast or true ) and not self.HasPetloading then
-		self:UnregisterEvent("PET_JOURNAL_LIST_UPDATE")
+	if (HPetSaves.Contrast or true ) and not self.HasPetloading and PetJournal then
+--~ 		self:UnregisterEvent("PET_JOURNAL_LIST_UPDATE")
 		local Maxnum,numPets = C_PetJournal.GetNumPets(false);
 		if not HPetBattleAny.HasPet.num or numPets ~=  HPetBattleAny.HasPet.num or Maxnum > HPetBattleAny.HasPet.Maxnum then
 		printt("系统数据:"..numPets.."插件数据"..(self.HasPet.num or 0))
 			self:LoadUserPetInfo()
 		end
-		self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
+--~ 		self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
 	end
 end
 function HPetBattleAny:LoadUserPetInfo()
@@ -367,28 +369,30 @@ function HPetBattleAny:ADDON_LOADED(_, name)
 			self.initialized = true
 			printt("test:插件载入")
 
-			self.hook:init()
+			self:Loadinginfo()
+			self:LoadUserPetInfo()
 			self:initforJournalFrame()
 			self:LoadSomeAny()
+			self.hook:init()
 
-			self:RegisterEvent("PET_BATTLE_OPENING_START")
-			self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
-			self:Loadinginfo()
+			self:RegisterEvent("PLAYER_ENTERING_WORLD")
 		end
 end
 
-
+function HPetBattleAny:PLAYER_ENTERING_WORLD()
+	self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
+	self:RegisterEvent("PET_BATTLE_OPENING_START")
+end
 
 ------------------------我是和谐的分割线---------------------------------
 
 
 function HPetBattleAny:initforJournalFrame()
-
 	button = CreateFrame("Button","HPetInitOpenButton",PetJournal,"UIPanelButtonTemplate")
 	button:SetText(L["HPet Options"])
 	button:SetHeight(22)
-	button:SetWidth(150)
-	button:SetPoint("RIGHT", PetJournalFindBattle, "LEFT", -40, 0)
+	button:SetWidth(#L["HPet Options"]*8)
+	button:SetPoint("TOPLEFT", PetJournalPetCard, "BOTTOMLEFT", -5, 0)
 	button:SetScript("OnClick",function()
 		if HPetOption then
 			if not HPetOption.ready then HPetOption:Init() end

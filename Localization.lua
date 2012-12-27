@@ -1,7 +1,7 @@
 ﻿if GetLocale() == "zhCN" then
 	HPetLocals = {
 			----------Options
-			["HPet Options"]				= "HPetBattleAny 设置",
+			["HPet Options"]				= "HPet 设置",
 			["Pet All Info"]				= "宠物信息",
 
 			["Loading"]						= "已开启，输入%s进入设置界面",
@@ -41,6 +41,9 @@
 			["FastForfeit"]					= "快速放弃",
 			["FastForfeitTooltip"]			= "|cff00ffff勾选后，放弃键将直接放弃战斗，无需确认|r",
 
+			["OtherTooltip"]				= "额外鼠标提示",
+			["OtherTooltipTooltip"]			= "鼠标提示中加入宠物信息(收集/来源)",
+
 			["bottom title"]				= "作者：上官晓雾|n发布：NGA(宠物区)|nID:上官晓雾#5190/zhCN",
 
 			["lock rarity"]					= "锁定品质",
@@ -64,7 +67,7 @@
 elseif GetLocale() == "zhTW" then
 		HPetLocals = {
 			----------Options
-			["HPet Options"] = "HPetBattleAny 設置",
+			["HPet Options"] = "HPet 設置",
 			["Pet All Info"]				= "寵物信息",
 
 			["Loading"]						= "已開啟，輸入%s進入設置介面",
@@ -103,6 +106,9 @@ elseif GetLocale() == "zhTW" then
 			["FastForfeit"]					= "快速放棄",
 			["FastForfeitTooltip"]				= "|cff00ffff按下放棄快捷鍵直接放棄戰鬥，無需確認|r",
 
+			["OtherTooltip"]				= "額外鼠標提示",
+			["OtherTooltipTooltip"]			= "鼠標提示中加入寵物信息(收集/來源)",
+
 			["bottom title"] = "作者：上官曉霧|n發布：NGA(寵物區)|nID:上官晓雾#5190/zhCN",
 
 			["lock rarity"]					= "鎖定品質",
@@ -125,7 +131,7 @@ elseif GetLocale() == "zhTW" then
 else
 	HPetLocals = {
 		---------- Options
-		["HPet Options"] = "HPetBattleAny Options",
+		["HPet Options"] = "HPet Options",
 		["Pet All Info"]				= "Pet All Info",
 
 		["Loading"]						= "is Loaded，type %s to configure",
@@ -159,7 +165,10 @@ else
 		["ShowBreedId"]					= "BreedID",
 
 		["FastForfeit"]					= "Fast Forfeit",
-		["FastForfeitTooltip"]				= "|cff00ffff按下放弃键直接放弃，无需确认|r",
+		["FastForfeitTooltip"]				= "|cff00ffffDown Forfeit's button without confirm|r",
+
+		["OtherTooltip"]				= "OtherTooltip",
+		["OtherTooltipTooltip"]			= "Add something to GameTooltip(Collected/sourceText)",
 
 		["bottom title"] = "作者：上官曉霧|n發布：NGA(寵物區)|nID:上官晓雾#5190/zhCN",
 
