@@ -1,5 +1,6 @@
-﻿-----####HPetBattleAny2.0####
+﻿-----####HPetBattleAny2.1####
 ----2.0:petid 不能为0必须为"0x0000000000000000",外加很多对应5.1的修改
+----2.1:读取宠物数据加入了1.5秒的冷却(?),避免因为特殊情况无限读取照成登陆卡住
 
 local _
 --- Globals
@@ -48,7 +49,7 @@ function HPetBattleAny:GetDefault()
 		EnemyAbScale=0.8,			--敌对技能大小
 		OnlyInPetInfo=false,
 		HighGlow=true,				--战斗中用品质颜色对宠物头像着色
-		Tooltip=false,				--额外鼠标提示
+		Tooltip=true,				--额外鼠标提示
 	}
 end
 
@@ -316,18 +317,20 @@ end
 
 
 --[[	OnEvent:					PET_JOURNAL_LIST_UPDATE		]]--
-
+local Steptime=GetTime()
 function HPetBattleAny:PET_JOURNAL_LIST_UPDATE()
-	if (HPetSaves.Contrast or true ) and not self.HasPetloading and PetJournal then
---~ 		self:UnregisterEvent("PET_JOURNAL_LIST_UPDATE")
+	if (HPetSaves.Contrast or true ) and not self.HasPetloading and PetJournal and GetTime() - 1.5 > Steptime	then
+		self:UnregisterEvent("PET_JOURNAL_LIST_UPDATE")
 		local Maxnum,numPets = C_PetJournal.GetNumPets(false);
 		if not HPetBattleAny.HasPet.num or numPets ~=  HPetBattleAny.HasPet.num or Maxnum > HPetBattleAny.HasPet.Maxnum then
 		printt("系统数据:"..numPets.."插件数据"..(self.HasPet.num or 0))
 			self:LoadUserPetInfo()
 		end
---~ 		self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
+		self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
+		Steptime=GetTime()
 	end
 end
+
 function HPetBattleAny:LoadUserPetInfo()
 	printt("test:数据处理.进入判断")
 	if HPetBattleAny.HasPetloading then

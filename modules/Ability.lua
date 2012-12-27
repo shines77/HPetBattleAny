@@ -1,7 +1,8 @@
-﻿-----####Ability1.5####
+﻿-----####Ability1.51####
 ----------1.45：稍微模块化了一下
 ----------1.46：隐藏按钮的快捷键图标
 ----------1.5：模块化(设置函数没有未独立出来)
+----------1.51:没有实际上的改动(敌对技能位置储存方式改变了。可能会重置位置)
 
 local _
 --~ Globals
@@ -217,14 +218,15 @@ local Backdrop={
 		insets = { left = 5, right = 5, top = 5, bottom = 5 }
 	}
 
-HAbiFrame = CreateFrame("frame","HAbiFrameTemp",PetBattleFrame)
 function CreateAbilityList(targetname)
+	HAbiFrame = CreateFrame("frame","HAbiFrame"..targetname,PetBattleFrame)
+
 	function HAbiFrame:Init(unit)
-		self:SetSize("215","85")
+		self:SetSize("175","30")
 		self:SetToplevel(true)
 	--~ 	self:SetClampedToScreen(true)
 		self:SetMovable(true)
-	--~ 	self:SetBackdrop(Backdrop);
+--~ 		self:SetBackdrop(Backdrop);
 		self:SetBackdropColor(0,0,0)
 
 		self.unit=unit
@@ -253,7 +255,7 @@ function CreateAbilityList(targetname)
 		if self.AbilityButtons==nil then
 			self.AbilityButtons={}
 			self:InitButton()
-			self:Ref()
+			HAbiFrame:Ref()
 		end
 		for i=1, #self.AbilityButtons do
 			local button = self.AbilityButtons[i];
@@ -263,23 +265,24 @@ function CreateAbilityList(targetname)
 	end
 
 	function HAbiFrame:Ref()
-			if not HPetSaves.EnemyAbPoint then HPetSaves.EnemyAbPoint={} end
+		if not HPetSaves.EnemyAbPoint then HPetSaves.EnemyAbPoint={} end
+		if not HPetSaves.EnemyAbPoint[targetname] then HPetSaves.EnemyAbPoint[targetname]={} end
 
-			HPetSaves.EnemyAbScale=HPetSaves.EnemyAbScale or 0.8
+		HPetSaves.EnemyAbScale=HPetSaves.EnemyAbScale or 0.8
 
-			self:SetScale(HPetSaves.EnemyAbScale)
+		self:SetScale(HPetSaves.EnemyAbScale)
 
-			self:SetPoint(HPetSaves.EnemyAbPoint[1] or 'BOTTOM',
-				HPetSaves.EnemyAbPoint[2] or nil,
-				HPetSaves.EnemyAbPoint[3] or 'BOTTOM',
-				HPetSaves.EnemyAbPoint[4] or '300',
-				HPetSaves.EnemyAbPoint[5] or '170')
+		self:SetPoint(HPetSaves.EnemyAbPoint[targetname][1] or 'BOTTOM',
+			HPetSaves.EnemyAbPoint[targetname][2] or nil,
+			HPetSaves.EnemyAbPoint[targetname][3] or 'BOTTOM',
+			HPetSaves.EnemyAbPoint[targetname][4] or '300',
+			HPetSaves.EnemyAbPoint[targetname][5] or '170')
 
-			if HPetSaves.EnemyAbility then
-				self:Show()
-			else
-				self:Hide()
-			end
+		if HPetSaves.EnemyAbility then
+			self:Show()
+		else
+			self:Hide()
+		end
 	end
 
 	function HAbiFrame:InitButton()
@@ -290,7 +293,7 @@ function CreateAbilityList(targetname)
 			end
 			Button=self.AbilityButtons[i]
 
-			Button:SetPoint('LEFT', (Button:GetWidth() + 5) * (i-1)+25, 0)
+			Button:SetPoint('LEFT', (Button:GetWidth() + 5) * (i-1) + 5, -40)
 			Button:SetScript('OnEnter', PetBattleAbilityButton_OnEnterhook)
 
 			Button:SetScript('OnClick',nil)
@@ -300,8 +303,8 @@ function CreateAbilityList(targetname)
 			Button:SetScript("OnDragStop",function(self)
 				if HPetSaves and not HPetSaves.LockEnemyAbility then self:GetParent():StopMovingOrSizing() end
 				if HPetSaves then
-					HPetSaves.EnemyAbPoint = {self:GetParent():GetPoint()}
-					if HPetSaves.EnemyAbPoint[2] then HPetSaves.EnemyAbPoint[2]=HPetSaves.EnemyAbPoint[2]:GetName()end
+					HPetSaves.EnemyAbPoint[targetname] = {self:GetParent():GetPoint()}
+					if HPetSaves.EnemyAbPoint[targetname][2] then HPetSaves.EnemyAbPoint[targetname][2]=HPetSaves.EnemyAbPoint[targetname][2]:GetName()end
 				end
 
 			end)
@@ -322,3 +325,5 @@ function CreateAbilityList(targetname)
 end
 
 CreateAbilityList("ActiveEnemy")
+--~ CreateAbilityList("Enemy2")
+--~ CreateAbilityList("Enemy3")

@@ -1,8 +1,5 @@
-﻿-----####Hook2.0####
--------2.0:对暴雪已内置的内容进行删除
--------删除:PetJournal_UpdatePetList
--------新增:GameTooltip.OnTooltipSetUnit,C_PetJournal.GetOwnedBattlePetString
--------以及针对5.1的修改:删除.....，增加鼠标提示信息
+﻿-----####Hook2.1####
+-------2.1:修复点击链接无法正确指向宠物
 
 local _
 ----- Globals
@@ -18,17 +15,26 @@ HPetBattleAny.hook = hookfunction
 
 --[[	function]]--
 local function TooltipAddOtherInfo(speciesID)
-	if HPetBattleAny.HasPet[speciesID] and HPetSaves.Tooltip then
+	if HPetSaves.Tooltip then
 		local sourceText = select(5,C_PetJournal.GetPetInfoBySpeciesID(speciesID))
-		if sourceText and sourceText~="" and HPetBattleAny.HasPet[speciesID] then
-			local str1,str2 = HPetBattleAny:GetPetCollectedInfo(HPetBattleAny.HasPet[speciesID])
-			GameTooltip:AddDoubleLine(str2,nil, 1, 1, 1);
+		if sourceText and sourceText~="" then
+			if HPetBattleAny.HasPet[speciesID] then
+				local str1,str2 = HPetBattleAny:GetPetCollectedInfo(HPetBattleAny.HasPet[speciesID])
+				GameTooltip:AddDoubleLine(str2,nil, 1, 1, 1);
+			end
 			GameTooltip:AddLine(sourceText, 1, 1, 1, true);
 			GameTooltip:Show();
 		end
 	end
 end
 
+local function IDtoString(id)
+	if id and type(id)~="string" then
+		id = format("%x",id)
+		id = "0x"..string.rep("0",16-#id)..id
+	end
+	return id
+end
 --[[	init	]]--
 hookfunction.init = function()
 	PetBattlePrimaryUnitTooltip:HookScript("OnHide",function() GameTooltip:Hide() end)
@@ -36,7 +42,7 @@ hookfunction.init = function()
 --~ 鼠标提示加入简单的收集信息
 	GameTooltip:HookScript("OnTooltipSetUnit",function()
 		local unit = select(2,GameTooltip:GetUnit())
-		if UnitIsBattlePet and UnitIsBattlePet(unit) then
+		if unit and UnitIsBattlePet and UnitIsBattlePet(unit) then
 			local speciesID = UnitBattlePetSpeciesID(select(2,GameTooltip:GetUnit()))
 			local str = C_PetJournal.GetOwnedBattlePetString(speciesID)
 			if not UnitIsWildBattlePet(unit) then GameTooltip:AddLine(str) end
@@ -60,14 +66,13 @@ hookfunction.init = function()
 			_G[a]=function(id)
 				b(id,temp)
 			end
-		elseif a=="PetJournalUtil_GetDisplayName" then
-			PetJournalUtil_GetDisplayName=b
+		elseif a=="PetJournalUtil_GetDisplayName" or a=="FloatingBattlePet_Toggle" then
+			_G[a]=b
 		elseif a~=0 and a~="init" then
 			hooksecurefunc(a,b)
 		end
 		PetJournal.listScroll.update = PetJournal_UpdatePetList;
 	end
-
 	--------------hook宠物api
 	C_PetJournal.GetOwnedBattlePetStringtemp=C_PetJournal.GetOwnedBattlePetString
 	C_PetJournal.GetOwnedBattlePetString=function(id)
@@ -78,7 +83,7 @@ hookfunction.init = function()
 			return str
 		end
 	end
-
+	-----------------
 	if HPetBattleAny.CreateLinkByInfo then
 		C_PetJournal.GetBattlePetLink=function(id)
 			return HPetBattleAny.CreateLinkByInfo(id)
@@ -99,10 +104,24 @@ hookfunction.init = function()
 			end
 		end
 	end
+
+------	点击链接无法正确指向宠物(修复处1)
+	C_PetJournal.GetPetInfoByPetIDtemp=C_PetJournal.GetPetInfoByPetID
+	C_PetJournal.GetPetInfoByPetID=function(id)
+		return C_PetJournal.GetPetInfoByPetIDtemp(IDtoString(id))
+	end
+	C_PetJournal.GetPetStatstemp=C_PetJournal.GetPetStats
+	C_PetJournal.GetPetStats=function(id)
+		return C_PetJournal.GetPetStatstemp(IDtoString(id))
+	end
 	-----------------
 end
 
 --[[	Hook	]]--petjournal
+------	点击链接无法正确指向宠物(修复处2)
+hookfunction.PetJournal_SelectPet = function(self, id)
+	PetJournal_ShowPetCardByID(IDtoString(id));
+end
 ----------删除宠物，提醒消息中附带宠物颜色(貌似会导致删除宠物不可用)
 hookfunction.PetJournalUtil_GetDisplayName=function(petID)
 	local speciesID, customName, level, xp, maxXp, displayID, isFavorite, petName, petIcon, petType, creatureID = C_PetJournal.GetPetInfoByPetID(petID);
@@ -138,7 +157,6 @@ hookfunction.PetJournal_UpdatePetCard=function(self)
 		PetJournalPetCard.TypeInfo.type:SetText(_G["BATTLE_PET_NAME_"..petType].."("..PetJournalPetCard.speciesID..")"..strbreedId)
 	end
 end
-
 --[[	Hook	]]--petbattle
 --------------------		鼠标提示/头像
 hookfunction.PetBattleUnitTooltip_UpdateForUnit = function(self, petOwner, petIndex)
@@ -253,7 +271,6 @@ hookfunction.PetBattleAbilityButton_OnEnter= function(self)
 		PetBattlePrimaryAbilityTooltip:Hide();
 	end
 end
-
 ----- 点击未收集的宠物链接直接链接到宠物日志
 hookfunction.FloatingBattlePet_Show=function(speciesID,level)
 	if level==0 then
@@ -269,6 +286,7 @@ hookfunction.FloatingBattlePet_Show=function(speciesID,level)
 			PetJournal_SelectSpecies(PetJournal, speciesID);
 		end
 	end
+----- 战宠提示框
 	local owned = C_PetJournal.GetOwnedBattlePetString(speciesID);
 	if owned ~= nil then
 		local str
@@ -288,7 +306,29 @@ hookfunction.FloatingBattlePet_Show=function(speciesID,level)
 		if str then FloatingBattlePetTooltip.Owned:SetText(str) end
 	end
 end
-
+----- 战宠鼠标提示
+hookfunction.BattlePetToolTip_Show=function(speciesID, level, breedQuality, maxHealth, power, speed, customName)
+	local owned = C_PetJournal.GetOwnedBattlePetString(speciesID);
+	if owned ~= nil then
+		local str
+		if  HPetBattleAny.HasPet[speciesID] then
+			for _,petInfo in pairs(HPetBattleAny.HasPet[speciesID]) do
+				petlink=ITEM_QUALITY_COLORS[petInfo.rarity-1].hex.._G["BATTLE_PET_BREED_QUALITY"..petInfo.rarity].."|r"
+				if str then
+					str=petlink.."/"..str
+				else
+					str=petlink
+				end
+			end
+			str = owned.." |cffffff00["..str.."]|r"
+		else
+			str = "|cffff0000"..NOT_COLLECTED.."!|r"
+		end
+		if str then BattlePetTooltip.Owned:SetText(str) end
+----- 修复该鼠标大小问题
+		BattlePetTooltip:SetSize(260,140)
+	end
+end
 ----- 战斗宠物提示tooltip(收集提示已自带5.1)
 hookfunction.BattlePetTooltipTemplate_SetBattlePet=function(frame,data)
 	if data.level ~=0 and data.breedQuality~=-1 then
@@ -302,6 +342,7 @@ hookfunction.BattlePetTooltipTemplate_SetBattlePet=function(frame,data)
 		if breedId then
 			frame.PetType:SetText(format("%s(%s)",frame.PetType:GetText(),breedId))
 		end
+		if not frame.Name:GetText() then frame.Name:SetText(data.customName) end
 	end
 end
 
@@ -314,7 +355,6 @@ hookfunction.PetBattleUnitFrame_OnClick=function(self,button)
 end
 
 ----- 修复宠物对战中一些快捷键失效的问题
-
 hookfunction.PetBattleFrame_ButtonDown=function(id,func)
 	if id==6 or id==12 then
 		local button

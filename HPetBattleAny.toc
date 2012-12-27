@@ -9,8 +9,8 @@
 ## Author-zhCN: 上官晓雾
 ## Author-zhTW: 上官曉霧
 
-## X-Date: 2012-12-04
-## Version: 1.4
+## X-Date: 2012-12-6
+## Version: 1.42
 
 ## Dependencies: Blizzard_PetJournal
 ## SavedVariables: HPetSaves
