@@ -1,7 +1,5 @@
-﻿-----####Hook.lua 2.3####
--------2.2:新模块，储存宠物技能组合
--------2.3:显示和隐藏其他UI更加安全，不会再造成BLZUI错误
-
+﻿-----####Hook.lua 2.4####
+-------2.4:某些地方用了SetScript，全部改成HookScript
 local _
 ----- Globals
 local _G = getfenv(0)
@@ -33,6 +31,7 @@ local function IDtoString(id)
 	if id and type(id)~="string" then
 		id = format("%x",id)
 		id = "0x"..string.rep("0",16-#id)..id
+		printt("宠物ID异常")
 	end
 	return id
 end
@@ -41,12 +40,12 @@ hookfunction.init = function()
 	for a,b in pairs(HPetBattleAny.hook) do
 		if a=="PetBattleUnitFrame_OnClick" then
 			--------------------------点击头像
-			PetBattleFrame.ActiveAlly:SetScript("OnClick",b)
-			PetBattleFrame.ActiveEnemy:SetScript("OnClick",b)
-			PetBattleFrame.Ally2:SetScript("OnClick",b)
-			PetBattleFrame.Ally3:SetScript("OnClick",b)
-			PetBattleFrame.Enemy2:SetScript("OnClick",b)
-			PetBattleFrame.Enemy3:SetScript("OnClick",b)
+			PetBattleFrame.ActiveAlly:HookScript("OnClick",b)
+			PetBattleFrame.ActiveEnemy:HookScript("OnClick",b)
+			PetBattleFrame.Ally2:HookScript("OnClick",b)
+			PetBattleFrame.Ally3:HookScript("OnClick",b)
+			PetBattleFrame.Enemy2:HookScript("OnClick",b)
+			PetBattleFrame.Enemy3:HookScript("OnClick",b)
 		elseif a=="PetBattleFrame_ButtonUp" or a=="PetBattleFrame_ButtonDown" then
 			local temp=_G[a]
 			_G[a]=function(id)
@@ -552,7 +551,7 @@ end
 
 ---------------------------手动xxxxxxxxxx
 for i = 1, 6 do
-	_G["PetJournalPetCardSpell"..i]:SetScript("OnClick",function(self)
+	_G["PetJournalPetCardSpell"..i]:HookScript("OnClick",function(self)
 		if not PetJournalPetCard.petID then return end
 		if (not IsModifiedClick() and not self.LevelRequirement:IsShown()) or (IsModifiedClick() and self.LevelRequirement:IsShown()) then
 			local pos = string.gsub("%1%2%3","(.*)(%%"..((i>3) and (i-3) or i)..")(.*)","%1"..i.."%3")

@@ -1,5 +1,5 @@
-﻿-----####HPetBattleAny2.2####
-----2.2:HPetBattleAny:VARIABLES_LOADED解决每次新增设置模块都有错误的问题
+﻿-----####HPetBattleAny2.3####
+----2.3:修复Steptime=GetTime()的位置错误
 
 local _
 --- Globals
@@ -262,7 +262,7 @@ end
 --[[ 	OnEvent:					PET_BATTLE_OPENING_START	]]--
 function HPetBattleAny:PET_BATTLE_OPENING_START()
 printt("test:战斗开始")
-self:PetPrintEX("---战斗开始---",1,1,0)
+self:PetPrintEX("---战斗开始---",1,0.96,0.41)
 self.EnemyPetInfo={}
 ----- 输出敌对宠物的数据
 		local petOwner=2
@@ -320,15 +320,15 @@ end
 --[[	OnEvent:					PET_JOURNAL_LIST_UPDATE		]]--
 local Steptime=GetTime()
 function HPetBattleAny:PET_JOURNAL_LIST_UPDATE()
-	if (HPetSaves.Contrast or true ) and not self.HasPetloading and PetJournal and GetTime() - 1.5 > Steptime	then
+	if (HPetSaves.Contrast or true ) and not self.HasPetloading and PetJournal and GetTime() - 1.5 > Steptime then
 		self:UnregisterEvent("PET_JOURNAL_LIST_UPDATE")
 		local Maxnum,numPets = C_PetJournal.GetNumPets(false);
 		if not HPetBattleAny.HasPet.num or numPets ~=  HPetBattleAny.HasPet.num or Maxnum > HPetBattleAny.HasPet.Maxnum then
 		printt("系统数据:"..numPets.."插件数据"..(self.HasPet.num or 0))
 			self:LoadUserPetInfo()
+			Steptime=GetTime()
 		end
 		self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
-		Steptime=GetTime()
 	end
 end
 
